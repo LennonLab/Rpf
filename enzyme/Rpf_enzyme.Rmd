@@ -1,0 +1,174 @@
+---
+title: "Resuscitation Promoting Factor"
+author: "Jay T. Lennon, Indiana University"
+date: "January 28, 2015"
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## OVERVIEW
+
+Initial experiments to assess activity of new recombinant Rpf. 
+Using EnzChek Lysozyme Assay Kit (https://tools.lifetechnologies.com/content/sfs/manuals/mp22013.pdf).
+EnzcChek detects the fluorescence of labeled peptidoglycan uppon hydrolysis. 
+Also testing effects of histidine removal via thrombin digest. 
+
+Brent did two experiments on January 21, 2015. 
+Similar treatments in both experiments; just different repcliation (exp 1 vs. exp 2). 
+Negative control was no Rpf added.
+First treatment was Rpf with histidine tag intact.
+Second treatment was Rpf with histidine tag removed via thrombin digest.
+There was also a postive control where lysozyme was used, but fluorescence values were all maxed out. 
+
+## SETUP
+```{r, results = 'hide'}
+rm(list=ls()) 
+getwd()
+setwd("~/GitHub/Rpf/enzyme")
+```
+
+## LOAD DATA
+
+```{r, results = 'hide'}
+exp1 <- read.table("20150121a_Rpf_Enz.txt", sep = "\t", header = TRUE)
+exp2 <- read.table("20150121b_Rpf_Enz.txt", sep = "\t", header = TRUE)
+```
+
+## SETTING UP ANOVA TREATMENTS
+
+```{r}
+treat1 <- factor(exp1$treat, levels = c('neg', 'his_plus', 'his_rem'))
+treat2 <- factor(exp2$treat, levels = c('neg', 'his_plus', 'his_rem'))
+```
+
+## CALCUATING MEANS OF TREATMENTS
+```{r}
+exp1.means <- tapply(exp1$fluor, treat1, mean)
+exp2.means <- tapply(exp2$fluor, treat2, mean)
+```
+
+## CALCUATING SEM OF TREATMENTS
+
+```{r}
+sem <- function(x){
+  sd(na.omit(x))/sqrt(length(na.omit(x))) 
+  }
+
+exp1.sem <- tapply(exp1$fluor, treat1, sem)
+
+exp2.sem <- tapply(exp2$fluor, treat2, sem)
+```
+
+## BARPLOT - EXPERIMENT 1: JANUARY 12, 2015
+```{r}
+exp1_bp <- barplot(exp1.means, ylim =c(0, round(max(exp1$fluor), digits = 0)), 
+              pch = 15, cex = 1.25, las = 1, cex.lab = 1.0, cex.axis = 0.75, 
+              xlab = "Rpf treatment", 
+              ylab = "Enzyme activity (rel fluor)",
+              names.arg = c("neg ctrl", "Rpf + his", "Rpf - his"))
+
+arrows(x0 = exp1_bp, y0 = exp1.means, y1 = exp1.means - exp1.sem, angle = 90,
+       length=0.1, lwd = 1)
+arrows(x0 = exp1_bp, y0 = exp1.means, y1 = exp1.means + exp1.sem, angle = 90,
+       length=0.1, lwd = 1)
+```
+
+## ANOVA - EXPERIMENT 1: JANUARY 12, 2015
+
+```{r}
+anova_exp1 <- aov(exp1$fluor ~ exp1$treat, data = exp1)
+
+summary(anova_exp1)
+
+TukeyHSD(anova_exp1)
+```
+
+### INTERPRETATION OF EXPERIMENT 1
+Overall ANOVA model is significant. 
+Tukey HSD indicates that fluorescence is higher when comparing histdine removed Rpf versus negative control.
+No difference, however, when comparing fluorescence of treatments with histidine intact vs. removed. 
+
+## BARPLOT - EXPERIMENT 2: JANUARY 12, 2015
+
+```{r}
+exp2_bp <- barplot(exp2.means, ylim =c(0, round(max(exp2$fluor), digits = 0)), 
+              pch = 15, cex = 1.25, las = 1, cex.lab = 1.0, cex.axis = 0.75, 
+              xlab = "Rpf treatment", 
+              ylab = "Enzyme activity (rel fluor)",
+              names.arg = c("neg ctrl", "Rpf + his", "Rpf - his"))
+
+arrows(x0 = exp2_bp, y0 = exp2.means, y1 = exp2.means - exp2.sem, angle = 90,
+       length = 0.1, lwd = 1)
+arrows(x0 = exp2_bp, y0 = exp2.means, y1 = exp2.means + exp2.sem, angle = 90,
+       length= 0.1, lwd = 1)
+```
+
+## ANOVA - EXPERIMENT 2: JANUARY 12, 2015
+
+```{r}
+anova_exp2 <- aov(exp2$fluor ~ exp2$treat, data = exp2)
+
+summary(anova_exp2)
+
+TukeyHSD(anova_exp2)
+```
+
+### INTERPRETATION OF EXPERIMENT 2: JANUARY 12, 2015
+Overall ANOVA model is significant. 
+Tukey HSD indicates that fluorescence is higher when comparing histdine removed Rpf versus negative control.
+No difference, however, when comparing fluorescence of treatments with histidine intact vs. removed. 
+
+## EXPERIMENT 3: FEBRUARY 6, 2015
+Compared Rpf from pBAD (old expression system) with pET15b (new expression systems). 
+Motivation was that we had observed better muralytic activit with pBAD. 
+Rpf concentration from PET15b and pBAD was 520 ng/ul
+
+### Calcuating Molarity of Recombinant Rpf
+```{r}
+elements <- c("C", "H", "N", "O", "S")
+atoms.mass <- c(12, 1, 14, 16, 32)
+atoms.rpf <- c(1243, 1950, 362, 424, 3)
+product <- atoms.mass * atoms.rpf
+mol.rpf <- sum(product)
+rpf.conc.mass <- 520 # ng/uL
+rpf.conc.mol <- (rpf.conc.mass * 1000) / mol.rpf # umol/L
+```
+
+## SETTING UP DATA AND TREATMENTS
+```{r, results = 'hide'}
+exp3 <- read.table("20150206_Rpf_Enz.txt", sep = "\t", header = TRUE)
+treat3 <- factor(exp3$treat, levels = c('control', 'pet15B', 'pBAD'))
+exp3.means <- tapply(exp3$fluor, treat3, mean)
+exp3.sem <- tapply(exp3$fluor, treat3, sem)
+```
+
+## BARPLOT - EXPERIMENT 3: FEBRUARY 6, 2015
+
+```{r}
+exp3_bp <- barplot(exp3.means, ylim =c(0, round(max(exp3$fluor), digits = 0)), 
+              pch = 15, cex = 1.25, las = 1, cex.lab = 1.0, cex.axis = 0.75, 
+              xlab = "Rpf treatment", 
+              ylab = "Enzyme activity (rel fluor)",
+              names.arg = c("control", "pet15B", "pBAD"))
+
+arrows(x0 = exp3_bp, y0 = exp3.means, y1 = exp3.means - exp3.sem, angle = 90,
+       length = 0.1, lwd = 1)
+arrows(x0 = exp3_bp, y0 = exp3.means, y1 = exp3.means + exp3.sem, angle = 90,
+       length= 0.1, lwd = 1)
+```
+
+## ANOVA - EXPERIMENT 3: FEBRUARY 6, 2015
+
+```{r}
+anova_exp3 <- aov(exp3$fluor ~ exp3$treat, data = exp3)
+
+summary(anova_exp3)
+
+TukeyHSD(anova_exp3)
+```
+
+### INTERPRETATION OF EXPERIMENT 3: FEBRUARY 6, 2015
+Overall ANOVA model is significant (P = 0.000151) 
+Tukey HSD indicates that fluorescence is different among all treatments.
+That is, pet15B fluor and pBAD fluor are both individually higher than the control (P = 0.0142482 and P = 0.0001479, respectively). 
+Futhermore, pBAD fluor is 34% higher than pet15B fluor (P = 0.0017805). 

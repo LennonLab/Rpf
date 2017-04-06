@@ -1,0 +1,146 @@
+---
+title: "Rpf dose-response"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Testing the dose-response effect of Rpf on resuscitation. R2A plates were impregnated with different concentrations of recombinant Rpf. We then suspended dormant KBS0714 onto the Rpf plates and incubated. Because colonies could not be easily counted, we took pictures and estimated surface area of KBS0714. 
+
+## Clear space and set working directory
+```{r}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf/Dose-Response")
+```
+
+## Load packages
+```{r}
+require("png")
+require("bbmle")
+require("pracma")
+```
+
+## Load data and run MLE analyses
+```{r}
+Rpf.raw <- read.table("20140312_Rpf_DoseResponse.txt", header = TRUE, sep="\t")
+Area <- Rpf.raw$Pixels / (pi * Rpf.raw$Plate.Width * Rpf.raw$Plate.Height)
+Rpf.raw <- data.frame(Rpf.raw, Area)
+
+# Select 48 or 96 hrs
+Biomass <- Rpf.raw[which(Rpf.raw$Hrs == 48),]
+Sum.Area <- sum(Biomass$Area)
+Rel.Biomass <- Biomass$Area/Sum.Area
+Rpf <- data.frame(Biomass, Rel.Biomass)
+
+#starting values 
+A = 1500 # Maximum biomass (15000)
+X = 55 # Optimum Rpf (55)
+K = 5 # Kappa; <1 right side decays slowly; >1 left side decays slowly (5)
+L = 0.1 # Lamba; peakiness (0.1) --> smaller flatter
+Z = 5 # Error (5)
+
+A = 1500 # Gausssian height
+X = 45 # location parameter
+C = 5 # Gaussian width
+D = 10 # Distortion parameter
+Z = 10 # error
+
+
+# Asymmetric Laplace 
+fit <- mle2(Pixels ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)* 
+            k ^sign(x - Rpf)), sd = z), start = list(a = A, x = X, k = K, l = L, z = Z), 
+            data = Rpf)
+
+# Exponential Modified Gaussian
+fit2 <- mle2(Pixels ~ dnorm(mean = ( ((a * c * sqrt(2 * pi)) / (2 * d)) * 
+            
+            exp((c^2 / (2*d^2)) - ((Rpf - x)/ d)) * ((d / abs(d)) +
+            
+            erf((Rpf - x)/(sqrt(2)*c) - (c/(sqrt(2)*d))))), sd = z),
+            
+            start = list(a = A, x = X, c = C, d = D, z= Z), data = Rpf) 
+
+
+
+
+fit3 <- mle2(Pixels ~ dnorm(mean = a0 * ( ((1 - a3 )) * exp((-log(2) * ((Rpf - a1)/a2))^2) 
+            + (a3 / (1 + ((Rpf - a1) / a2)^2)) ), sd = z), 
+            start = list(a0 = A, a1 = B, a2 = C, a3 = D, z = Z), data = Rpf)
+
+height*((1-shape)*exp(-ln(2)*((x-center)/hwhm)^2)+shape/(1+((x-center)/hwhm)^2))
+
+# Pseuod-Voigt
+A = 500 # Gausssian height
+B = 35 # location parameter "Center"
+C = 21 # HWHM
+D = 0.7 # Shape parameter
+Z = 10 # error
+
+fit3 <- mle2(Pixels ~ dnorm(mean = a0 * ((1-a3)*exp(-log(2)*((Rpf-a1)/a2)^2)+a3/(1+((Rpf-a1)/a2)^2)), sd = z), start = list(a0 = A, a1 = B, a2 = C, a3 = D, z = Z), data = Rpf)
+
+
+
+```
+
+# Plot Data
+```{r}
+png(filename="~/GitHub/Rpf/Dose-Response/Figure.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(jitter(Rpf$Rpf, factor = 0), Rpf$Pixels, xlim = c(-25, 175), 
+     ylim = c(0, 600), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 300, 600), at = c(0, 300, 600))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 300, 600))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 50, 100, 150), at = c(0, 50, 100, 150))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 50, 100, 150))
+
+mtext('Rpf (nM)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext(expression(paste('Relative Biomass')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.6)
+
+# Plot function
+# curve(coef(fit)[[1]] * exp(-(x-coef(fit)[[2]]) * coef(fit)[[4]] * sign(coef(fit)[[2]] - x) * 
+#       coef(fit)[[3]]^sign(coef(fit)[[2]]-x)),from = 0, to = 160, add = TRUE, lty = 6, lwd = 2.5, col = "red")
+# 
+# curve(coef(fit)[[1]] * exp(-(x-coef(fit)[[2]]) * coef(fit)[[4]] * sign(coef(fit)[[2]] - x) * 
+#       coef(fit)[[3]]^sign(coef(fit)[[2]]-x)),from = 0, to = 160, add = TRUE, lty = 6, lwd = 2.5)
+# 
+# curve(coef(fit2)[[1]] * coef(fit2)[[3]] * sqrt(2*pi) / 2 * coef(fit2)[[4]] 
+#       * exp((fit2(coef))[[3]]^2 / (2 * ceof(fit2)[[4]]^2) - ((x - coef(fit2)[[2]]/coef(fit2)[[4]]
+#       * ((coef(fit2)[[4]] / abs(coef(fit2)[[4]])  + erf((x - coef(fit2)[[2]]/sqrt(2)*coef*fit2[[3]]
+#       - (coef(fit2[[3]]/sqrt(2)*coef(fit2)[[4]] ))))  )))) )
+# 
+#             erf((Rpf - x)/(sqrt(2)*c) - (c/(sqrt(2)*d))))), sd = z),
+#             
+#             start = list(a = A, x = X, c = C, d = D, z= Z), data = Rpf) 
+
+# curve(coef(fit)[[1]]*exp(-0.5*((x-coef(fit)[[3]])/coef(fit)[[2]])^2),from = 0, to = 160, add = TRUE, lty = 6, lwd = 2.5)
+
+curve(coef(fit3)[[1]] * ((1 - coef(fit3)[[4]]) * exp(-log(2) * ((x - coef(fit3)[[2]]) / coef(fit3)[[3]])^2)
+      + coef(fit3)[[4]] / (1+ ((x - coef(fit3)[[2]]) / coef(fit3)[[3]])^2)), from = -10, to = 160, 
+      add = TRUE, lty = 6, lwd = 2.5)
+
+dev.off()
+graphics.off()
+```

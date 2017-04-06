@@ -1,0 +1,86 @@
+---
+title: "Rpf dose-response"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Characterizing the kinetics of recombinant Rpf using the enzCheck assay which measuring muralytic activity when fluorescein-labeled peptidoglycan is hydrolzyed. 
+
+## Clear space and set working directory
+```{r}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf/enzyme")
+```
+
+## Load packages
+```{r}
+require("png")
+require("bbmle")
+require("drc")
+require("ggplot2")
+```
+
+## Load data
+```{r}
+enz <- read.csv(file="rpf.csv", header=TRUE) 
+all <- read.csv(file="alldata.csv", header=TRUE)  
+brent <- read.csv(file="brent.csv", header=TRUE) 
+lyz <- read.csv(file="lyso.csv", header=TRUE)
+```
+
+## Run MLE
+```{r}
+#starting values 
+V = 85000 
+K = 0.025 
+Z = 100
+
+# Michaelis-Menten
+fit <- mle2(brent$abs ~ dnorm(mean = v * brent$sub / (Km + brent$sub), sd = z), 
+    start = list(v = V, k = K, z = Z), data = brent)
+```
+
+# Plot Data
+```{r}
+png(filename="~/GitHub/Rpf/enzyme/Figure.MM.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(jitter(brent[,1], factor = 0), brent[,2], xlim = c(0, 0.3), 
+     ylim = c(0, 90000), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 20000, 40000, 60000, 80000), at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 0.05, 0.10, 0.15, 0.2, 0.25), at = c(0, 0.05, 0.10, 0.15, 0.2, 0.25))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 0.05, 0.10, 0.15, 0.2, 0.25))
+
+mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext(expression(paste('Absorbance')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.6)
+
+# Plot function
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 6, lwd = 2.5)
+
+dev.off()
+graphics.off()
+```

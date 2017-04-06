@@ -1,0 +1,102 @@
+---
+title: "Rpf - growth curve"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Overview: measured growth (OD600) over time on Micrococcus (KBS0714) with vs. without Rpf. Cells were grown in LMM medium (1% L-lithium lactate) at 35ml in 250 mL Klett flasks at 25C and 150 rpm. In +Rpf treatment, we added 350 uL of pET15b His+ 1.4mg mL (47.8uM initial, 341nM final). The inoculum was a 100 uL KBS0714 cells that had been stored for two months shaken plus 2 months on the bench.
+
+# Set Directory
+```{r}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf/growth")
+```
+
+# Load packages
+```{r}
+require("png")
+```
+
+# Load data
+```{r}
+od.raw <- read.csv("growth.curve.txt", head = TRUE, sep = "\t")
+head(od.raw)
+
+od.early <- od.raw[1:29,]
+od.late <- od.raw[29:nrow(od.raw),1:5]
+
+sem <- function(x) sqrt(var(x)/length(x))
+
+od.cont <- data.frame(od.early[,1], apply(od.early[, 2:5], 1, mean), 
+                      apply(od.early[, 2:5], 1, sem))
+colnames(od.cont)[1:3] <- c("hour", "cont.mean", "cont.sem")
+
+od.rpf <- data.frame(od.early[,1], apply(od.early[, 6:9], 1, mean), 
+                      apply(od.early[, 6:9], 1, sem))
+colnames(od.rpf)[1:3] <- c("hour", "rpf.mean", "rpf.sem")
+```
+
+# Make figure
+```{r}
+png(filename="~/GitHub/Rpf/growth/growth.curve.png",
+    width = 1200, height = 700, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(od.cont[,1], od.cont[,2], xlim = c(0, 625), ylim = c(-0.5, 4), type = "b", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n",
+     panel.first={
+       arrows(x0 = od.cont[,1], y0 = od.cont[,2], y1 = od.cont[, 2] - od.cont[, 3],
+              angle = 90, length = 0.05, lwd = 2)
+       arrows(x0 = od.cont[,1], y0 = od.cont[,2], y1 = od.cont[, 2] + 
+              od.cont[, 3], angle = 90,length = 0.05, lwd = 2)
+})
+box(lwd=2)
+
+# Construct Rpf plot
+points(od.rpf[,1], od.rpf[,2], type = "b", pch = 22, bg = "white", col = "black",
+       cex = 2, cex.lab = 1.5, lwd = 2,
+       panel.first={
+         arrows(x0 = od.rpf[,1], y0 = od.rpf[, 2], y1 = od.rpf[, 2] - od.rpf[, 3], 
+                angle = 90, length = 0.05, lwd = 2)
+        arrows(x0 = od.rpf[,1], y0 = od.rpf[, 2], y1 = od.rpf[, 2] + od.rpf[, 3], 
+               angle = 90, length = 0.05, lwd = 2)
+         })
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c("0", "1", "2", "3", "4"), 
+        at = c(0, 1, 2, 3, 4))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 1, 2, 3, 4))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 2, 0),
+    labels = c(0, 100, 200, 300, 400, 500, 600), at = c(0, 100, 200, 300, 400, 500, 600))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 100, 200, 300, 400))
+
+mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
+      line = -2, adj = 0.6)
+
+mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -2.5, adj = 0.5)
+
+
+# Add late ODs from controls
+lines(od.late[,1], od.late[,2], lty=2, col="black", lwd = 2)
+lines(od.late[,1], od.late[,3], lty=2, col="black", lwd = 2)
+lines(od.late[,1], od.late[,4], lty=2, col="black", lwd = 2)
+lines(od.late[,1], od.late[,5], lty=2, col="black", lwd = 2)
+
+dev.off()
+graphics.off()
+```
