@@ -1,0 +1,95 @@
+---
+title: "GeneralityRpf"
+author: "Venus Kuo"
+date: "April 2, 2017"
+output: html_document
+---
+# Based on growthcurve_code.R Written by: M. Larsen (2013/07/18) and M. Muscarella (2015/11/24) # 
+
+
+## 1) Questions
+Is Rpf effects general on taxa unrelated to Micrococcus luteus?
+
+## 2) Methods
+
+Microbial Growth Curves on KBS enviromental strains
+
+1. 701(-) Bacteriodetes, Sphingobacteriaceae, Pedobacter Gram -
+2. 702 (+),Actinobacteria, Micrococcaceae, Arthrobacter Gram +
+3. 703 (+),Actinobacteria, Micrococcaceae, Arthrobacter Gram +
+4. 705 (-), Proteobacteria, Rhodospirillaceae, Azospirillium Gram - KmR. Tc and Gm inhibited growth
+5. 706 (+),Actinobact., Mycobacteriaceae, Mycobacterium Gram +
+6. 710 (-), Proteobacteria, Pseudomonadaceae, Pseudomonas Gram - AmR, StR, SpR, RfR
+7. 711 (-), Proteobacteria, Oxalobacteriaceae, Janthinobacterium Gram -AmR, SpR
+8. 712 (-), Proteobacteria, Comamonadaceae, Variovorax Gram -AmR, KmR, StR, GmR, SpR, RfR
+9. 714 (+), Actinobacteria, Micrococcaceae, Micrococcus Gram +
+10. 715 (+), Actinobacteria, Microbacteriaceae, Curtobacterium Gram +
+11. 724 (+), Actinobacteria, Nocardiaceae, Rhodococcus Gram +
+12. 812 (+). Bacillus subtilis SSB2 WT Gram +
+
+
+# Set working directory #
+
+```{r, echo=FALSE}
+# Set working directory #
+rm(list = ls())
+getwd()
+setwd("C:/Users/Venus/Github/Rpf/generality/")
+
+# Require or install packages #
+package.list <- c('vegan', 'ggplot2', 'gplots', 'coin', 'vegan', 'nlme' ,'data.table', 'plyr', 'reshape', 'reshape2', 'ggplot2') 
+for (package in package.list) {
+  if (!require(package, character.only=T, quietly=T)) { 
+    install.packages(package)
+    library(package, character.only=T)
+} }
+```
+# Extract umax, L, and A from Growth_Curve code # 
+
+```{r, echo = FALSE}
+
+
+
+```
+
+## 3) Description of the data set 
+
+
+
+# Load data set #
+
+
+```{r}
+# Output of my raw data run saved as "ModifiedGompEquationOutput.csv" #
+data <- read.csv("GrowthCurveData.csv", header = T)
+
+# Subset from data # 
+umax <- subset(data, select = c("Genus", "Treatment", "umax"))
+A <- subset(data, select = c("Genus", "Treatment", "A"))
+L <- subset(data, select = c("Genus", "Treatment", "L"))
+
+# Mean values of umax, A, and L # 
+umax.mean <- ddply(umax, c("Genus", "Treatment"), summarise, mean=mean(umax))
+A.mean <- ddply(A, c("Genus", "Treatment"), summarise, mean=mean(A))
+L.mean <- ddply(L, c("Genus", "Treatment"), summarise, mean=mean(L))
+```
+
+## Data Visualization ##  
+
+```{r}
+# Bar graph showing the difference in umax between treatments for each strain # 
+
+
+# Plot the umax difference between treatments for each strain # 
+
+
+```
+
+## Data Anaylsis ##
+
+```{r}
+
+
+```
+
+
