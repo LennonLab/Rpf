@@ -8,7 +8,11 @@ output: html_document
 
 
 ## 1) Questions
-Is Rpf effects general on taxa unrelated to Micrococcus luteus?
+
+1. Is Rpf effects general on taxa unrelated to Micrococcus luteus?
+
+2. Is there a phylogenetic signal to the responsiveness of Rpf? 
+
 
 ## 2) Methods
 
@@ -34,62 +38,409 @@ Microbial Growth Curves on KBS enviromental strains
 # Set working directory #
 rm(list = ls())
 getwd()
-setwd("C:/Users/Venus/Github/Rpf/generality/")
+setwd("C:/Users/Venus/Github/Rpf/generality/growthparameterchanges/")
 
 # Require or install packages #
-package.list <- c('vegan', 'ggplot2', 'gplots', 'coin', 'vegan', 'nlme' ,'data.table', 'plyr', 'reshape', 'reshape2', 'ggplot2') 
+package.list <- c('vegan', 'ggplot2', 'data.table' , 'nlme' , 'plyr', 'dplyr', 'reshape2', 'stats') 
 for (package in package.list) {
   if (!require(package, character.only=T, quietly=T)) { 
     install.packages(package)
     library(package, character.only=T)
-} }
-```
-# Extract umax, L, and A from Growth_Curve code # 
-
-```{r, echo = FALSE}
-
-
-
+  } }
 ```
 
 ## 3) Description of the data set 
 
+growthcurveparameters.csv : A csv file containing the growth curve parameters extracted from 20160320_rawgrowthcurve.csv and 20160323_rawgrowthcurve.csv using the Growth_Curve Repo code. The parameters described are KBS strain, phylum, genus, rep, gram, treatment, b0, A, umax, L, z, umax.lw, umax.up, umax.lw, umax.up.FI. 
 
+KBSsequences.fasta : A fasta file containing the 16s RNA sequences from each of the KBS strain studied.
+
+umax/L/A.csv : 
+
+## Visualization of data set ##
+## Proportional difference in umax, A, and lag time across genus # 
+
+```{r}
+setwd("C:/Users/Venus/Github/Rpf/generality/growthparameterchanges/")
+# I manually calculated and input proportion (Rpf-control/control) into csv files # 
+u <- read.csv("umax.csv", header=T)
+l <- read.csv("L.csv", header=T)
+a <- read.csv("A.csv", header=T)
+
+# Plot growth parameter # 
+u.mean <- ddply(u, c("Genus"), summarise, mean=mean(umaxDelta))
+
+# Bar graph showing the difference in umax between treatments for each strain # 
+u.mean.boxplot <- ggplot(u, aes(x=Genus, y = umaxDelta)) + 
+  geom_boxplot() +
+  theme_bw()   
+
+# Standard Errors # 
+u.means.sem <- ddply(u, c("Genus"), summarise,
+                   mean=mean(umaxDelta), sem=sd(umaxDelta)/sqrt(length(umaxDelta)))
+u.means.sem <- transform(u.means.sem, lower=mean-sem, upper=mean+sem)
+
+# Ploting bargraph with standard errors # 
+u.mean.boxplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=u.means.sem)  +
+  labs(x="Genus", y="Maximum growth rate") +
+  theme_classic() +
+  theme(axis.text=element_text(colour="black", size=18),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+
+p <- ggplot(ToothGrowth, aes(x=dose, y=len)) + 
+  geom_boxplot()
+
+par(mar=c(7,3.85,0.5,0.5))
+boxplot(umaxDelta~Genus , las=3 , 
+        data=u, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
+mtext("% Maximum growth rate change with treatment", side = 2, line = 2.25, cex = 1)
+abline(a=0, b=0, col="Black", lty=2)
+
+par(mar=c(7,3.85,0.5,0.5))
+boxplot(L~Genus , las=3 , 
+        data=l, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
+mtext("% Lag time change with treatment", side = 2, line = 2.25, cex = 1)
+abline(a=0, b=0, col="Black", lty=2)
+
+par(mar=c(7,3.85,0.5,0.5))
+boxplot(A~Genus , las=3 , 
+        data=a, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
+mtext("% Biomass yeild change with treatment", side = 2, line = 2.25, cex = 1)
+abline(a=0, b=0, col="Black", lty=2)
+
+```
+
+## Phylogenetic distance values ## 
+
+```{r}
+
+
+
+
+```
 
 # Load data set #
 
-
 ```{r}
-# Output of my raw data run saved as "ModifiedGompEquationOutput.csv" #
-data <- read.csv("GrowthCurveData.csv", header = T)
+# Read growth curve parameter output #
+data <- read.csv("growthcurveparameters.csv", header = T)
+data <- na.omit(data)
 
-# Subset from data # 
-umax <- subset(data, select = c("Genus", "Treatment", "umax"))
+# Subset Genus from data # 
+umax <- subset(data, select = c("Genus", "Treatment", "Rep", "umax"))
 A <- subset(data, select = c("Genus", "Treatment", "A"))
 L <- subset(data, select = c("Genus", "Treatment", "L"))
+
+# Subset Phylum from data # 
+umax.p <- subset(data, select = c("Phylum", "Treatment", "umax"))
+A.p <- subset(data, select = c("Phylum", "Treatment", "A"))
+L.p <- subset(data, select = c("Phylum", "Treatment", "L"))
 
 # Mean values of umax, A, and L # 
 umax.mean <- ddply(umax, c("Genus", "Treatment"), summarise, mean=mean(umax))
 A.mean <- ddply(A, c("Genus", "Treatment"), summarise, mean=mean(A))
 L.mean <- ddply(L, c("Genus", "Treatment"), summarise, mean=mean(L))
+
+# Phylum mean values of growth curve parameters # 
+umax.mean.p <- ddply(umax.p, c("Phylum", "Treatment"), summarise, mean=mean(umax))
+A.mean.p <- ddply(A.p, c("Phylum", "Treatment"), summarise, mean=mean(A))
+L.mean.p <- ddply(L.p, c("Phylum", "Treatment"), summarise, mean=mean(L))
+
 ```
 
-## Data Visualization ##  
+## Data Visualization and Analysis ##  
 
 ```{r}
 # Bar graph showing the difference in umax between treatments for each strain # 
+umax.mean.barplot <- ggplot(umax.mean, aes(x=Genus,y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+umax.means.sem <- ddply(umax, c("Genus", "Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+umax.means.sem <- transform(umax.means.sem, lower=mean-sem, upper=mean+sem)
+
+umax.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=umax.means.sem) +
+  ggtitle(("Rpf treatment effect on maximum growth rate")) +
+  labs(x="Microbial Genus", y="umax") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+
+umax.aov <- anova(lm(umax ~ Treatment*Genus, data=umax))
+umax.aov
+# Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
 
 
-# Plot the umax difference between treatments for each strain # 
+# Bar graph showing the difference in L between treatments for each strain # 
+L.mean.barplot<- ggplot(L.mean, aes(x=Genus,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+L.means.sem <- ddply(L, c("Genus", "Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+L.means.sem <- transform(L.means.sem, lower=mean-sem, upper=mean+sem)
+
+L.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=L.means.sem) +
+  ggtitle(("Rpf treatment effect on Lag time")) +
+  labs(x="Microbial Genus", y="L") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank())  
+# There is a negative value for the Lag time of Janthiniobacteria, perhaps I should rerun that growth curve 
+L.aov <- anova(lm(L ~ Treatment*Genus, data=L))
+L.aov
+# Interaction between genus and Treatment was significant (p = 0.0009556) #
+
+# Bar graph showing the difference in L between treatments for each strain # 
+A.mean.barplot<- ggplot(A.mean, aes(x=Genus,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+A.means.sem <- ddply(A, c("Genus", "Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+A.means.sem <- transform(A.means.sem, lower=mean-sem, upper=mean+sem)
+
+A.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=A.means.sem) +
+  ggtitle(("Rpf treatment effect on biomass yeild")) +
+  labs(x="Microbial Genus", y="Biomass (OD600)") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+A.aov <- anova(lm(A ~ Treatment*Genus, data=A))
+A.aov
 
 
+# Rpf treatment increased umax for genus Arthrobacter and pseudomonas. Perhaps Mycobacteriaceae, but the se bars are wide # 
+# Lag time with Rpf treatment for genus Micrococcus and Mycobacteriaceae, while Rpf increased L for Variovorax # 
+# Biomass yeild (A) increased with Rpf treatment for Arthrobacter, Mcrococcus, Curtobacterium, Pseudomonas, and Perobacter. While A decreased with Rpf treatment in Baccillus and Janithinobacterium # 
 ```
 
-## Data Anaylsis ##
+# Effects of Rpf based on Phylum grouping # 
 
 ```{r}
+# Umax vs phylum bargraph # 
+umax.mean.p.barplot<- ggplot(umax.mean.p, aes(x=Phylum, y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", width=0.5, position="dodge", color="black", size=1.25, fill=c("white")) +
+  theme_classic()  # editing 
+  
+# Calculate standard error # 
+umax.means.p.sem <- ddply(umax.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
 
+umax.means.p.sem <- transform(umax.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+# Bar plot with error bars # 
+umax.mean.p.barplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=umax.means.p.sem)  +
+  labs(x="Treatment", y="Maximum growth rate") +
+  theme_classic() +
+  theme(axis.text.y =element_text(colour="black", size=18),
+        axis.text.x =element_text(colour="black", size=18, angle = 45, hjust = 1),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+
+# Bar graph showing the difference in L between treatments for each Phylum # 
+L.mean.p.barplot<- ggplot(L.mean.p, aes(x=Phylum ,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+L.means.p.sem <- ddply(L.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+L.means.p.sem <- transform(L.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+L.mean.p.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=L.means.p.sem) +
+  ggtitle(("Rpf treatment effect on Lag time")) +
+  labs(x="Microbial Phylum", y="L") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank())  
+
+
+# Bar graph showing the difference in L between treatments for each phylum # 
+A.mean.p.barplot<- ggplot(A.mean.p, aes(x=Phylum,y = mean, fill=Treatment)) +geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+A.means.p.sem <- ddply(A.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+A.means.p.sem <- transform(A.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+A.mean.p.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=A.means.p.sem) +
+  ggtitle(("Rpf treatment effect on biomass yeild")) +
+  labs(x="Microbial Phylum", y="Biomass (OD600)") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+
+
+
+# The average umax increased with Rpf treatment for Actinobacteria, Bacteriodies, and Firmicutes # 
+# Lag time decreased for Actinobacteria and ncreased for Proteobacteria, but perhaps not significantly #
+# Biomass yeild (A) increased with Rpf treatment for Actinobacteria and Bacteriodetes, but decreased in Firmicutes # 
+```
+
+
+## Phylogenetic Analysis ## 
+
+
+```{r}
+# Load packages # 
+package.list <- c('muscle', 'ape', 'seqinr', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper') 
+for (package in package.list) {
+  if (!require(package, character.only=T, quietly=T)) { 
+    install.packages(package)
+    library(package, character.only=T)
+  } }
+
+# Read FASTA file as DNAStringSet #
+dna <- readDNAStringSet("dna.fasta")
+
+# Performing an Alignment using Muscle from Ape package #
+aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
+
+# Convert Alignment File to DNAbin Object #
+dna.bin <- as.DNAbin(aln)
+dna.bin.1 <- as.phyDat(aln)
+
+# Create Distance Matrix with "raw" Model {ape}
+seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
+
+# Maximum Likelihood Algorithm to Construct Tree
+fit <- pml(nj.tree, data=dna.bin.1)
+
+# Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
+nj.tree <- bionj(seq.dist.raw)
+
+# Identify Outgroup Sequence
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Root the Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Plot the Rooted Tree{ape}
+par(mar = c(1,1,2,1) + 0.1)
+plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
+           direction = "right", cex = 1, label.offset = 1)
+add.scale.bar(cex = 0.7)
+
+# Create distance matrix with "F84" model {ape}
+seq.dist.F84 <- dist.dna(dna.bin, model = "F84", pairwise.deletion = FALSE)
+
+# Plot Distances from Different DNA Substitution Models
+par(mar = c(5, 5, 2, 1) + 0.1)
+plot(seq.dist.raw, seq.dist.F84,
+     pch = 20, col = "red", las = 1, asp = 1, xlim = c(0, 0.7), ylim = c(0, 0.7),
+     xlab = "Raw Distance", ylab = "F84 Distance")
+abline(b = 1, a = 0, lty = 2)
+text(0.65, 0.6, "1:1")
+
+# Make Neighbor Joining Trees Using Different DNA Substitution Models {ape}
+raw.tree <- bionj(seq.dist.raw)
+F84.tree <- bionj(seq.dist.F84)
+
+# Define Outgroups
+raw.outgroup <- match("Methanosarcina", raw.tree$tip.label)
+F84.outgroup <- match("Methanosarcina", F84.tree$tip.label)
+
+# Root the Trees {ape}
+raw.rooted <- root(raw.tree, raw.outgroup, resolve.root=TRUE)
+F84.rooted <- root(F84.tree, F84.outgroup, resolve.root=TRUE)
+
+# Make Cophylogenetic Plot {ape}
+layout(matrix(c(1,2), 1, 2), width = c(1, 1))
+par(mar = c(1, 1, 2, 0))
+plot.phylo(raw.rooted, type = "phylogram", direction = "right", show.tip.label=TRUE,
+           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "Raw")
+par(mar = c(1, 0, 2, 1))
+plot.phylo(F84.rooted, type = "phylogram", direction = "left", show.tip.label=TRUE,
+           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "F84")
+## Perfect Match ##
+
+
+#### Integrating Traits and Phylogeny ####
+
+# Import Growth Rate Data
+p.growth <- read.table("averagedgrowthcurve.txt", sep = "\t", header = TRUE,
+                       row.names = 1)
+
+# Generating a tree with traits #
+# Generate Neighbor Joining Tree Using F84 DNA Substitution Model {ape}
+nj.tree <- bionj(seq.dist.F84)
+
+# Define the Outgroup
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Create a Rooted Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Keep Rooted but Drop Outgroup Branch
+nj.rooted <- drop.tip(nj.rooted, "Methanosarcina")
+
+# Define Color Palette
+mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+
+# Map Phosphorus Traits {adephylo}
+par(mar=c(1,1,1,1) + 0.1)
+x <- phylo4d(nj.rooted, p.growth)
+table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
+              cex.label = 1, scale = TRUE, use.edge.length = FALSE,
+              edge.color = "black", edge.width = 2, box = FALSE,
+              col=mypalette(25), pch = 15, cex.symbol = 2.5,
+              ratio.tree = 0.6, cex.legend = 1, center = FALSE)
+
+
+# Finding the Phylogenetic Signal #
+# Visualize Trees With Different Levels of Phylogenetic Signal {geiger}
+nj.lambda.5 <- rescale(nj.rooted, "lambda", 0.5)
+nj.lambda.0 <- rescale(nj.rooted, "lambda", 0)
+layout(matrix(c(1,2,3), 1, 3), width = c(1, 1, 1))
+par(mar=c(1,0.5,2,0.5)+0.1)
+plot(nj.rooted, main = "lambda = 1", cex = 0.7, adj = 0.5)
+plot(nj.lambda.5, main = "lamba = 0.5", cex = 0.7, adj = 0.5)
+plot(nj.lambda.0, main = "lamba = 0", cex = 0.7, adj = 0.5)
+
+# Generate Test Statistics for Comparing Phylogenetic Signal {geiger}
+fitContinuous(nj.rooted, p.growth, model = "lambda")
+fitContinuous(nj.lambda.0, p.growth, model = "lambda")
+
+# The phylogenetic signal is fairly strong, lambda=1 and lambda=0 is AIC is the same #
 
 ```
+
+
+
+
+
+
+
+
 
 
