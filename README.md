@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Rpf
 ===
 
@@ -30,4 +29,4 @@ This repository contains open-source code, data, & text files for the *M. luteus
 ## Contributors
 
 [Venus Kuo](https://github.com/vkuo2): Ph.D. student in the [Lennon Lab](http://www.indiana.edu/~microbes/people.php).
->>>>>>> refs/remotes/origin/master
+
