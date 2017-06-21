@@ -92,26 +92,6 @@ u.mean.boxplot +
         panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
 
 
-p <- ggplot(ToothGrowth, aes(x=dose, y=len)) + 
-  geom_boxplot()
-
-par(mar=c(7,3.85,0.5,0.5))
-boxplot(umaxDelta~Genus , las=3 , 
-        data=u, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
-mtext("% Maximum growth rate change with treatment", side = 2, line = 2.25, cex = 1)
-abline(a=0, b=0, col="Black", lty=2)
-
-par(mar=c(7,3.85,0.5,0.5))
-boxplot(L~Genus , las=3 , 
-        data=l, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
-mtext("% Lag time change with treatment", side = 2, line = 2.25, cex = 1)
-abline(a=0, b=0, col="Black", lty=2)
-
-par(mar=c(7,3.85,0.5,0.5))
-boxplot(A~Genus , las=3 , 
-        data=a, ylab=" ", cex.lab=0.85 , cex.axis=0.75)
-mtext("% Biomass yeild change with treatment", side = 2, line = 2.25, cex = 1)
-abline(a=0, b=0, col="Black", lty=2)
 
 ```
 
@@ -312,6 +292,8 @@ A.mean.p.barplot + geom_errorbar(aes(ymax=upper,
 
 
 ```{r}
+rm(list = ls())
+setwd("C:/Users/Venus/Github/Rpf/generality/")
 # Load packages # 
 package.list <- c('muscle', 'ape', 'seqinr', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper') 
 for (package in package.list) {
@@ -321,7 +303,7 @@ for (package in package.list) {
   } }
 
 # Read FASTA file as DNAStringSet #
-dna <- readDNAStringSet("dna.fasta")
+dna <- readDNAStringSet("KBSsequences.fasta")
 
 # Performing an Alignment using Muscle from Ape package #
 aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
@@ -333,11 +315,11 @@ dna.bin.1 <- as.phyDat(aln)
 # Create Distance Matrix with "raw" Model {ape}
 seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
 
-# Maximum Likelihood Algorithm to Construct Tree
-fit <- pml(nj.tree, data=dna.bin.1)
-
 # Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
 nj.tree <- bionj(seq.dist.raw)
+
+# Maximum Likelihood Algorithm to Construct Tree
+#fit <- pml(nj.tree, data=dna.bin.1)
 
 # Identify Outgroup Sequence
 outgroup <- match("Methanosarcina", nj.tree$tip.label)

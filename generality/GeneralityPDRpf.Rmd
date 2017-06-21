@@ -28,59 +28,380 @@ for (package in package.list) {
 setwd("C:/Users/Venus/Github/Rpf/generality/growthparameterchanges/")
 # I manually calculated and input proportion (Rpf-control/control) into csv files # 
 dat <- read.csv("gcdelta.csv", header=T)
+dat$PDKBS0714 <- factor(dat$PDKBS0714)
+
+
+# Coloring the box plots by phylum # 
+library(RColorBrewer)
+myColors <- brewer.pal(4,"Set1")
+names(myColors) <- levels(dat$Phylum)
+colScale <- scale_colour_manual(name = "Phylum",values = myColors)
+
 
 # Boxplot showing the difference in umax between treatments for each strain # 
-u.boxplot <- ggplot(dat, aes(x=Genus, y = udelta)) + 
+u.boxplot <- ggplot(dat, aes(x=PDKBS0714, y = udelta, fill = Phylum)) + 
   geom_boxplot(lwd = 0.75) +
-  theme_bw()
+  colScale
+  
 
 u.boxplot + 
   labs(x="Genera", y=expression(paste(Delta ,"Maximum growth rate"))) +
   theme_classic() +
+  scale_x_discrete(labels=c("Micrococcus","Arthrobacter",
+                            "Curtobacterium","Rhodococcus", "Mycobacteriaceae",
+                            "Bacillus", "Azospirillium", "Janthinobacterium",
+                            "Pseudomonas", "Variovorax", "Pedobacter")) +
   theme(axis.text.y=element_text(colour="black", size=18),
-        axis.text.x=element_text(colour="black", size =12, angle = 45, hjust = 1),
+        axis.text.x=element_text(colour="black", size =12, angle = 35, hjust = 1),
         axis.title=element_text(size=20),
-        axis.title.y = element_text(colour="black",  margin = margin(0,15,0,0)),
-        axis.title.x = element_text(colour="black",margin=margin(15,0,0,0)),
-        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA)) +
-  geom_hline(yintercept = 0, linetype="dotted")
+        axis.title.y = element_text(colour="black",  margin = margin(0,5,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(5,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=14),
+        legend.text=element_text(size=13.5)) +
+  geom_hline(yintercept = 0, linetype="dashed", size = 1) + 
+  annotate("text", x = 1.1 , y=0.45, label = c("A"), size=10)
 
 
 # Box plot showing lag time difference between treatments # 
-l.boxplot <- ggplot(dat, aes(x=Genus, y = Ldelta)) + 
+l.boxplot <- ggplot(dat, aes(x=PDKBS0714, y = Ldelta,  fill = Phylum)) + 
   geom_boxplot(lwd = 0.75) +
-  theme_bw()
+  colScale
 
 l.boxplot + 
   labs(x="Genera", y=expression(paste(Delta ,"Lag time"))) +
   theme_classic() +
+  scale_x_discrete(labels=c("Micrococcus","Arthrobacter",
+                            "Curtobacterium","Rhodococcus", "Mycobacteriaceae",
+                            "Bacillus", "Azospirillium", "Janthinobacterium",
+                            "Pseudomonas", "Variovorax", "Pedobacter")) +
   theme(axis.text.y=element_text(colour="black", size=18),
-        axis.text.x=element_text(colour="black", size =12, angle = 45, hjust = 1),
+        axis.text.x=element_text(colour="black", size =12, angle = 35, hjust = 1),
         axis.title=element_text(size=20),
-        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,0)),
-        axis.title.x = element_text(colour="black",margin=margin(15,0,0,0)),
-        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA)) +
-  geom_hline(yintercept = 0, linetype="dotted")
+        axis.title.y = element_text(colour="black",  margin = margin(0,5,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(5,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=14),
+        legend.text=element_text(size=13.5)) +
+  geom_hline(yintercept = 0, linetype="dashed", size =1) + 
+  annotate("text", x = 1.15 , y=1.85, label = c("B"), size=10)
 
 
 # Box plot showing Biomass difference between treatments # 
-a.boxplot <- ggplot(dat, aes(x=Genus, y = ADelta)) + 
+a.boxplot <- ggplot(dat, aes(x=PDKBS0714, y = ADelta, fill = Phylum)) + 
   geom_boxplot(lwd = 0.75) +
-  theme_bw()
+  colScale
 
 a.boxplot + 
   labs(x="Genera", y=expression(paste(Delta ,"Biomass yield"))) +
   theme_classic() +
+    scale_x_discrete(labels=c("Micrococcus","Arthrobacter",
+                            "Curtobacterium","Rhodococcus", "Mycobacteriaceae",
+                            "Bacillus", "Azospirillium", "Janthinobacterium",
+                            "Pseudomonas", "Variovorax", "Pedobacter")) +
   theme(axis.text.y=element_text(colour="black", size=18),
-        axis.text.x=element_text(colour="black", size =12, angle = 45, hjust = 1),
+        axis.text.x=element_text(colour="black", size =12, angle = 35, hjust = 1),
         axis.title=element_text(size=20),
-        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,0)),
-        axis.title.x = element_text(colour="black",margin=margin(15,0,0,0)),
-        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA)) +
-  geom_hline(yintercept = 0, linetype="dotted")
+        axis.title.y = element_text(colour="black",  margin = margin(0,5,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(5,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=14),
+        legend.text=element_text(size=13.5)) +
+  geom_hline(yintercept = 0, linetype="dashed", size =1) + 
+  annotate("text", x = 1.1 , y=0.275, label = c("C"), size=10)
 
 
 ```
+
+# One-way ANOVA testing of growth parameter changes with Rpf treatment # 
+
+```{r}
+rm(list = ls())
+# Read growth curve parameter output #
+data <- read.csv("growthcurveparameters.csv", header = T)
+data <- na.omit(data)
+
+# Subset Genus from data # 
+umax <- subset(data, select = c("Genus", "Treatment", "Rep", "umax"))
+A <- subset(data, select = c("Genus", "Treatment", "A"))
+L <- subset(data, select = c("Genus", "Treatment", "L"))
+
+# Subset Phylum from data # 
+umax.p <- subset(data, select = c("Phylum", "Treatment", "umax"))
+A.p <- subset(data, select = c("Phylum", "Treatment", "A"))
+L.p <- subset(data, select = c("Phylum", "Treatment", "L"))
+
+# Mean values of umax, A, and L # 
+umax.mean <- ddply(umax, c("Genus", "Treatment"), summarise, mean=mean(umax))
+A.mean <- ddply(A, c("Genus", "Treatment"), summarise, mean=mean(A))
+L.mean <- ddply(L, c("Genus", "Treatment"), summarise, mean=mean(L))
+
+# Phylum mean values of growth curve parameters # 
+umax.mean.p <- ddply(umax.p, c("Phylum", "Treatment"), summarise, mean=mean(umax))
+A.mean.p <- ddply(A.p, c("Phylum", "Treatment"), summarise, mean=mean(A))
+L.mean.p <- ddply(L.p, c("Phylum", "Treatment"), summarise, mean=mean(L))
+
+```
+
+## Data Visualization and Analysis ##  
+
+```{r}
+# Bar graph showing the difference in umax between treatments for each strain # 
+umax.mean.barplot <- ggplot(umax.mean, aes(x=Genus,y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+umax.means.sem <- ddply(umax, c("Genus", "Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+umax.means.sem <- transform(umax.means.sem, lower=mean-sem, upper=mean+sem)
+
+umax.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=umax.means.sem) +
+  ggtitle(("Rpf treatment effect on maximum growth rate")) +
+  labs(x="Microbial Genus", y="umax") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+
+umax.aov <- anova(lm(umax ~ Treatment*Genus, data=umax))
+umax.aov
+# Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
+
+
+# Bar graph showing the difference in L between treatments for each strain # 
+L.mean.barplot<- ggplot(L.mean, aes(x=Genus,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+L.means.sem <- ddply(L, c("Genus", "Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+L.means.sem <- transform(L.means.sem, lower=mean-sem, upper=mean+sem)
+
+L.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=L.means.sem) +
+  ggtitle(("Rpf treatment effect on Lag time")) +
+  labs(x="Microbial Genus", y="L") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank())  
+# There is a negative value for the Lag time of Janthiniobacteria, perhaps I should rerun that growth curve 
+L.aov <- anova(lm(L ~ Treatment*Genus, data=L))
+L.aov
+# Interaction between genus and Treatment was significant (p = 0.0009556) #
+
+# Bar graph showing the difference in L between treatments for each strain # 
+A.mean.barplot<- ggplot(A.mean, aes(x=Genus,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+A.means.sem <- ddply(A, c("Genus", "Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+A.means.sem <- transform(A.means.sem, lower=mean-sem, upper=mean+sem)
+
+A.mean.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=A.means.sem) +
+  ggtitle(("Rpf treatment effect on biomass yeild")) +
+  labs(x="Microbial Genus", y="Biomass (OD600)") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+A.aov <- anova(lm(A ~ Treatment*Genus, data=A))
+A.aov
+
+# Rpf treatment increased umax for genus Arthrobacter and pseudomonas. Perhaps Mycobacteriaceae, but the se bars are wide # 
+# Lag time with Rpf treatment for genus Micrococcus and Mycobacteriaceae, while Rpf increased L for Variovorax # 
+# Biomass yeild (A) increased with Rpf treatment for Arthrobacter, Mcrococcus, Curtobacterium, Pseudomonas, and Perobacter. While A decreased with Rpf treatment in Baccillus and Janithinobacterium # 
+```
+
+# Phylum level # 
+# Effects of Rpf based on Phylum grouping # 
+
+```{r}
+# Umax vs phylum bargraph # 
+umax.mean.p.barplot<- ggplot(umax.mean.p, aes(x=Phylum, y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+# Calculate standard error # 
+umax.means.p.sem <- ddply(umax.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+
+umax.means.p.sem <- transform(umax.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+# Bar plot with error bars # 
+umax.mean.p.barplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=umax.means.p.sem)  +
+  labs(x="Treatment", y="Maximum growth rate") +
+  theme_classic() +
+  theme(axis.text.y =element_text(colour="black", size=18),
+        axis.text.x =element_text(colour="black", size=18, angle = 45, hjust = 1),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+umax.p.aov <- anova(lm(umax ~ Treatment*Phylum, data=umax.p))
+umax.p.aov
+
+# Bar graph showing the difference in L between treatments for each Phylum # 
+L.mean.p.barplot<- ggplot(L.mean.p, aes(x=Phylum ,y = mean, fill=Treatment)) +
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+L.means.p.sem <- ddply(L.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+L.means.p.sem <- transform(L.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+L.mean.p.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=L.means.p.sem) +
+  ggtitle(("Rpf treatment effect on Lag time")) +
+  labs(x="Microbial Phylum", y="L") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank())  
+
+L.p.aov <- anova(lm(L ~ Treatment*Phylum, data=L.p))
+L.p.aov
+
+# Bar graph showing the difference in L between treatments for each phylum # 
+A.mean.p.barplot<- ggplot(A.mean.p, aes(x=Phylum,y = mean, fill=Treatment)) +geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+A.means.p.sem <- ddply(A.p, c("Phylum", "Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+A.means.p.sem <- transform(A.means.p.sem, lower=mean-sem, upper=mean+sem)
+
+A.mean.p.barplot + geom_errorbar(aes(ymax=upper,
+                                  ymin=lower),
+                              position=position_dodge(0.9),
+                              data=A.means.p.sem) +
+  ggtitle(("Rpf treatment effect on biomass yeild")) +
+  labs(x="Microbial Phylum", y="Biomass (OD600)") +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+   theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) +
+  theme(panel.background = element_blank()) 
+
+A.p.aov <- anova(lm(A ~ Treatment*Phylum, data=A.p))
+A.p.aov
+
+# The umax differences were driven by phylum #
+# The L differences were driven by phylum # 
+# The A differences were driven by treatment # 
+# Lag time decreased for Actinobacteria and ncreased for Proteobacteria, but perhaps not significantly #
+# Biomass yeild (A) increased with Rpf treatment for Actinobacteria and Bacteriodetes, but decreased in Firmicutes # 
+```
+
+# Gram status # 
+
+```{r}
+gram.umax.mean <- ddply(data, c("Gram", "Treatment"), summarise, mean=mean(umax))
+# Umax vs phylum bargraph # 
+gram.barplot<- ggplot(data = gram.umax.mean, aes(x=Gram, y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+# Calculate standard error # 
+gram.umax.sem <- ddply(data, c("Gram", "Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+
+gram.umax.sem <- transform(gram.umax.sem, lower=mean-sem, upper=mean+sem)
+
+# Bar plot with error bars # 
+gram.barplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=gram.umax.sem)  +
+  labs(x="Gram status", y="Maximum growth rate") +
+  theme_classic() +
+  theme(axis.text.y =element_text(colour="black", size=18),
+        axis.text.x =element_text(colour="black", size=18, angle = 45, hjust = 1),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+gram.umax.aov <- anova(lm(umax ~ Treatment*Gram, data=data))
+gram.umax.aov
+
+
+gram.L.mean <- ddply(data, c("Gram", "Treatment"), summarise, mean=mean(L))
+# Umax vs phylum bargraph # 
+gram.L.barplot<- ggplot(data = gram.L.mean, aes(x=Gram, y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+# Calculate standard error # 
+gram.L.sem <- ddply(data, c("Gram", "Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+
+gram.L.sem <- transform(gram.L.sem, lower=mean-sem, upper=mean+sem)
+
+# Bar plot with error bars # 
+gram.L.barplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=gram.L.sem)  +
+  labs(x="Gram status", y="Lag time") +
+  theme_classic() +
+  theme(axis.text.y =element_text(colour="black", size=18),
+        axis.text.x =element_text(colour="black", size=18, angle = 45, hjust = 1),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+gram.L.aov <- anova(lm(L ~ Treatment*Gram, data=data))
+gram.L.aov
+
+
+
+gram.A.mean <- ddply(data, c("Gram", "Treatment"), summarise, mean=mean(A))
+# Umax vs phylum bargraph # 
+gram.A.barplot<- ggplot(data = gram.A.mean, aes(x=Gram, y = mean, fill=Treatment)) + 
+  geom_bar(stat = "identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+# Calculate standard error # 
+gram.A.sem <- ddply(data, c("Gram", "Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+
+gram.A.sem <- transform(gram.A.sem, lower=mean-sem, upper=mean+sem)
+
+# Bar plot with error bars # 
+gram.A.barplot + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0.9), width=0.15, data=gram.A.sem)  +
+  labs(x="Gram status", y="Biomass Yield") +
+  theme_classic() +
+  theme(axis.text.y =element_text(colour="black", size=18),
+        axis.text.x =element_text(colour="black", size=18, angle = 45, hjust = 1),
+        axis.title=element_text(size=20),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
+        axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+gram.A.aov <- anova(lm(A ~ Treatment*Gram, data=data))
+gram.A.aov
+
+
+
+```
+
+
 
 # Phylogenetic Distance to KBS0714 #
 # Load and visualize dataset # 
@@ -148,13 +469,13 @@ add.scale.bar(cex = 0.7)
 
 ```{r}
 # Requires alignment to be read in with as phyDat object #
-fit <- pml(nj.rooted, data=dna.bin.1)
+#fit <- pml(nj.rooted, data=dna.bin.1)
 # Fit tree using a JC69 substitution model # 
-fitJC <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE)
+#fitJC <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE)
 # Model selection with either an ANOVA test or by AIC value #
-anova(fitJC, fitGTR)
-AIC(fitJC)
-AIC(fitGTR) # Takes a long time... # 
+#anova(fitJC, fitGTR)
+#AIC(fitJC)
+#AIC(fitGTR) # Takes a long time... # 
 
 ```
 
@@ -187,6 +508,8 @@ u.scatter <- ggplot(dat, aes(x=PDKBS0714, y = udelta)) +
   geom_point(size = 2) +
   theme_bw()
 
+pd.u <- lm(udelta ~ PDKBS0714, data = dat)
+
 u.scatter + 
   labs(x="Genera", y=expression(paste(Delta ,"Maximum growth rate"))) +
   theme_classic() +
@@ -198,9 +521,7 @@ u.scatter +
         panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA)) +
   geom_hline(yintercept = 0, linetype="dotted") 
 
-  geom_hline(slope = pd.u)
-pd.u <- lm(udelta ~ PDKBS0714, data = dat)
-
+summary(pd.u)
 
 
 

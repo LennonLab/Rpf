@@ -14,7 +14,7 @@ Overview: measured growth (OD600) over time on Micrococcus (KBS0714) with vs. wi
 ```{r}
 rm(list=ls())
 getwd()
-setwd("~/GitHub/Rpf/growth")
+setwd("C:/Users/Venus/Github/Rpf/growth")
 ```
 
 # Load packages
@@ -43,7 +43,7 @@ colnames(od.rpf)[1:3] <- c("hour", "rpf.mean", "rpf.sem")
 
 # Make figure
 ```{r}
-png(filename="~/GitHub/Rpf/growth/growth.curve.png",
+png(filename="C:/Users/Venus/Github/Rpf/growth/growth.curve.png",
     width = 1200, height = 700, res = 96*2)
 
 plot.new()
@@ -97,19 +97,40 @@ lines(od.late[,1], od.late[,3], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,4], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,5], lty=2, col="black", lwd = 2)
 
-dev.off()
-graphics.off()
+#dev.off()
+#graphics.off()
 ```
 
 
-## Brent Growth Curve Parameters ##
+## Brent Growth Curve Parameters with Rpf treatment ##
+
+# Set working directory and load growth curve parameter data # 
 
 ```{r}
+# Clear environment # 
 rm(list = ls())
+
+# Load and require dependencies # 
+package.list <- c('vegan', 'nlme' ,'data.table', 'plyr', 'tidyr', 'dplyr', 'reshape', 'reshape2', 'ggplot2') 
+for (package in package.list) {
+  if (!require(package, character.only=T, quietly=T)) { 
+    install.packages(package)
+    library(package, character.only=T)
+  } }
+
 # Load Brent's growth curve data # 
 brent <- read.csv("brent.csv", header = T)
-brent <- subset(brent, select = c("Treatment", "Rep", "umax", "A", "L"))
 
+brent <- brent[1:7 ,] # Remove one replicate of Rpf +, werid values 
+
+# Subset relevant variables # 
+brent <- subset(brent, select = c("Treatment", "Rep", "umax", "A", "L"))
+```
+
+# Maximum growth rate with treatment figure # 
+
+```{r}
+# Summarize umax values based on treatment type # 
 brent.mean <- ddply(brent, c("Treatment"), summarise, mean=mean(umax))
 
 # Bar graph showing the difference in umax between treatments for each strain # 
@@ -133,12 +154,15 @@ brent.mean.barplot +
         axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
         panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
 
+brent.umax.t <- t.test(umax~Treatment, data=brent)
+brent.umax.t # umax increased with Rpf treatment 
+# t = -4.16, df = 3.91, p-value = 0.015 # 
 
-brent.umax.aov <- anova(lm(umax ~ Treatment, data=brent))
-brent.umax.aov 
+```
 
+# Lag time with Rpf treatment figure #
 
-# Lag time #
+```{r}
 # Summarize lag time growth parameters # 
 brent.mean.l <- ddply(brent, c("Treatment"), summarise, mean=mean(L))
 
@@ -163,8 +187,14 @@ brent.mean.l.barplot +
         axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
         panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
 
+brent.l.t <- t.test(L~Treatment, data=brent)
+brent.l.t # Lag time does not seem to be different among treatment but that doesn't make sense 
+```
 
-# Biomass Yield #
+
+# Biomass Yield with Rpf treatment figure #
+
+```{r}
 # Summarize Biomass (A) data # 
 brent.mean.a <- ddply(brent, c("Treatment"), summarise, mean=mean(A))
 
@@ -184,10 +214,14 @@ brent.mean.a.barplot +
   labs(x="Treatment", y="Biomass Yield (OD600)") +
   theme_classic() +
   theme(axis.text=element_text(colour="black", size=18),
-        axis.title=element_text(size=20),
+        axis.title=element_text(size=20), 
         axis.title.y = element_text(colour="black",  margin = margin(0,25,0,0)),
         axis.title.x = element_text(colour="black",margin=margin(18,0,0,0)),
         panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+brent.l.a <- t.test(A~Treatment, data=brent)
+brent.l.a # Biomass increases with Rpf treatment 
+# Results: t = -754, df = 4.97, p-value < 0.0005
 
 ```
 
