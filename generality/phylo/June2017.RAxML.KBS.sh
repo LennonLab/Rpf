@@ -11,7 +11,7 @@ module load raxml/8.0.26
 
 cd /N/dc2/projects/Lennon_Sequences/RpfGenerality/
 
-raxmlHPC-PTHREADS -T 4 -f a -m GTRGAMMA -p 12345 -x 12345 -o Methanosarcina -# autoMRE -s ./June2017.clustal.afa.fasta -n KBS.ML
+raxmlHPC-PTHREADS -T 4 -f a -m GTRGAMMA -p 12345 -x 12345 -o Methanosarcina -# autoMRE -s ./20170630_KBS -n KBS.ML
 
 # -T = number of threads
 # -f = specifies bootstrapping algorithm with ML generating tree at same time

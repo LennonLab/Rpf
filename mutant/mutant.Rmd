@@ -1,0 +1,140 @@
+---
+title: "Rpf - mutant"
+author: "Venus Kuo"
+date: "July 6, 2017"
+output: html_document
+---
+
+# Set Directory
+```{r}
+rm(list=ls())
+getwd()
+setwd("C:/Users/Venus/Github/Rpf/mutant")
+```
+
+# Load packages
+
+```{r}
+require("ggplot2")
+require("plyr")
+```
+
+# Load data
+
+```{r}
+mutant <- read.csv("mutant.csv", head = TRUE)
+
+head(mutant)
+
+mutant$Experiment <- as.factor(mutant$Experiment)
+mutant$Hour <- as.factor(mutant$Hour)
+```
+
+# Make figure
+
+```{r}
+# Subset Rpf mutants # 
+E54A <- subset(mutant, Experiment == "E54A")
+E54K <- subset(mutant, Experiment == "E54K")
+E54Q <- subset(mutant, Experiment == "E54Q")
+
+# Calculate biomass means and standard errors of the means # 
+E54A.means.sem <- ddply(E54A, c("Treatment"), summarise,
+                   mean=mean(OD600), sem=sd(OD600)/sqrt(length(OD600)))
+E54A.means.sem <- transform(E54A.means.sem, lower=mean-sem, upper=mean+sem)
+
+E54K.means.sem <- ddply(E54K, c("Treatment"), summarise,
+                   mean=mean(OD600), sem=sd(OD600)/sqrt(length(OD600)))
+E54K.means.sem <- transform(E54K.means.sem, lower=mean-sem, upper=mean+sem)
+
+E54Q.means.sem <- ddply(E54Q, c("Treatment"), summarise,
+                   mean=mean(OD600), sem=sd(OD600)/sqrt(length(OD600)))
+E54Q.means.sem <- transform(E54Q.means.sem, lower=mean-sem, upper=mean+sem)
+
+# Barplot of bacterial gene abundance in soil # 
+E54A.barplot <- ggplot(E54A.means.sem, aes(x=Treatment,y = mean)) + 
+  geom_bar(width=0.5, colour="black", fill="white" , position = position_dodge(width = 0.65), stat = "identity", size=1)
+
+E54K.barplot <- ggplot(E54K.means.sem, aes(x=Treatment,y = mean)) + 
+  geom_bar(width=0.5, colour="black", fill="white" , position = position_dodge(width = 0.65), stat = "identity", size=1)
+
+E54Q.barplot <- ggplot(E54Q.means.sem, aes(x=Treatment,y = mean)) + 
+  geom_bar(width=0.5, colour="black", fill="white" , position = position_dodge(width = 0.65), stat = "identity", size=1)
+
+# Barplot of bacterial gene abundance in soil for pub figures # 
+E54A.barplot + geom_errorbar(aes(ymax=upper, ymin=lower),
+                              position=position_dodge(0.65), data=E54A.means.sem, width = 0.2, size=1) +
+  labs(x="Treatment", y="Biomass Yeild (OD600)") +
+  theme_classic() +
+  scale_fill_manual(values=c("White", "Black")) +
+  theme(axis.text.y=element_text(colour="black", size=16),
+        axis.text.x=element_text(colour="black", size =14),
+        axis.title=element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(25,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=1.5, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=18),
+        legend.text=element_text(size=18)) +
+  annotate("text", x =0.55, y=2.7, label = c("A"), size=12)
+
+E54K.barplot + geom_errorbar(aes(ymax=upper, ymin=lower),
+                              position=position_dodge(0.65), data=E54K.means.sem, width = 0.2, size=1) +
+  labs(x="Treatment", y="Biomass Yeild (OD600)") +
+  theme_classic() +
+  scale_fill_manual(values=c("White", "Black")) +
+  theme(axis.text.y=element_text(colour="black", size=16),
+        axis.text.x=element_text(colour="black", size =14),
+        axis.title=element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(25,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=1.5, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=18),
+        legend.text=element_text(size=18))+
+  annotate("text", x =0.55, y=2.7, label = c("B"), size=12)
+  
+E54Q.barplot + geom_errorbar(aes(ymax=upper, ymin=lower),
+                              position=position_dodge(0.65), data=E54Q.means.sem, width = 0.2, size=1) +
+  labs(x="Treatment", y="Biomass Yeild (OD600)") +
+  theme_classic() +
+  scale_fill_manual(values=c("White", "Black")) +
+  theme(axis.text.y=element_text(colour="black", size=16),
+        axis.text.x=element_text(colour="black", size =14),
+        axis.title=element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,25,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(25,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=1.5, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 1.5),
+        legend.title = element_text(size=18),
+        legend.text=element_text(size=18))+
+  annotate("text", x =0.55, y=2.25, label = c("C"), size=12)
+```
+
+# Run statistics
+
+```{r}
+# E54A #
+anova_exp1 <- aov(E54A$OD600 ~ E54A$Treatment, data = E54A)
+summary(anova_exp1) # Treatment significantly affected OD600
+TukeyHSD(anova_exp1) # 2.02 dif increase from E54A to WT Rpf
+head(E54A.means.sem) # 72.1% redution in biomass
+
+# E54K # 
+anova_exp2 <- aov(E54K$OD600 ~ E54K$Treatment, data = E54K)
+summary(anova_exp2) # Treatment significantly affected OD600
+TukeyHSD(anova_exp2) # 1.1 dif increase from E54K to WT Rpf
+head(E54K.means.sem) # On average 36.3% decrease in biomass 
+
+# E54Q # 
+anova_exp3 <- aov(E54Q$OD600 ~ E54Q$Treatment, data = E54Q)
+summary(anova_exp3) # Treatment significantly affected OD600
+TukeyHSD(anova_exp3) # 0.58 dif increase from E54Q to WT Rpf
+head(E54Q.means.sem) # On average 24.9% decrease in biomass 
+```
+
+
+

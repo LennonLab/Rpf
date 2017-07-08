@@ -1,0 +1,322 @@
+---
+title: "Rpf - generality results"
+author: "Venus Kuo"
+date: "July 7, 2017"
+output: html_document
+---
+
+# 1) Goals
+
+1. How do bacteria other than KBS0714 respond to Rpf?
+
+2. Is there a phylogenetic signal to Rpf response? 
+
+Here, I analyze Growth Curves of below KBS enviromental strains treated with either Rpf+ or Rpf-.
+I will also generate phylogenetic trees of KBS isolates with proportional changes of each growth parameter. 
+Finally, I will perform Pagel's and Blomberg test of phylogenetic signal to Rpf response. 
+
+1.  701(-) Bacteriodetes, Sphingobacteriaceae, Pedobacter Gram -
+2.  702 (+),Actinobacteria, Micrococcaceae, Arthrobacter Gram +
+3.  703 (+),Actinobacteria, Micrococcaceae, Arthrobacter Gram +
+4.  705 (-), Proteobacteria, Rhodospirillaceae, Azospirillium Gram - KmR. Tc and Gm inhibited growth
+5.  706 (+),Actinobact., Mycobacteriaceae, Mycobacterium Gram +
+6.  710 (-), Proteobacteria, Pseudomonadaceae, Pseudomonas Gram - AmR, StR, SpR, RfR
+7.  711 (-), Proteobacteria, Oxalobacteriaceae, Janthinobacterium Gram -AmR, SpR
+8.  712 (-), Proteobacteria, Comamonadaceae, Variovorax Gram -AmR, KmR, StR, GmR, SpR, RfR
+9.  714 (+), Actinobacteria, Micrococcaceae, Micrococcus Gram +
+10.  715 (+), Actinobacteria, Microbacteriaceae, Curtobacterium Gram +
+11.  724 (+), Actinobacteria, Nocardiaceae, Rhodococcus Gram +
+12.  812 (+). Bacillus subtilis SSB2 WT Gram +
+
+
+# 2) Set working environment
+
+```{r, message=FALSE, warning=FALSE}
+# Set working directory 
+rm(list = ls())
+setwd("C:/Users/Venus/Github/Rpf/generality/")
+
+# Load packages # 
+package.list <- c('muscle', 'ape', 'seqinr', 'phytools', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper', 'plyr', 'reshape')
+for (package in package.list) {
+  if (!require(package, character.only=T, quietly=T)) { 
+    install.packages(package)
+    library(package, character.only=T)
+  } }
+```
+
+
+# 3) Load growth curve parameter data 
+
+## Import proportional differences in growth curve data
+
+```{r}
+# Import Growth Rate Data 
+traits <- read.table("traits.txt", sep = "\t", header = TRUE, row.names = 1)
+
+# Remove phylo info 
+traits <- traits[, -1:-5]
+
+# Standardize traits (mean=0, std = 1)
+traits.norm <- scale(traits)
+
+# Check scaling
+check.norm.mean <- round(colMeans(traits.norm, na.rm = TRUE), 1)
+check.norm.sd <- apply(traits.norm, 2, sd, na.rm = TRUE)
+
+# Convert scaled list back to dataframe
+traits.norm.db <- data.frame(matrix(unlist(traits.norm), 
+              nrow=12, byrow = T), stringsAsFactors = FALSE)
+rownames(traits.norm.db) <- rownames(traits)
+colnames(traits.norm.db) <- colnames(traits)
+```
+
+
+# 4) Generate phylogenetic trees 
+
+KBSsequences.fasta : A fasta file containing the 16s RNA sequences from each of the KBS strain studied.
+Code below adapted from Quantitative Biodiversity 2017 course. 
+
+```{r, message=FALSE, warning=FALSE}
+# Read FASTA file as DNAStringSet 
+dna <- readDNAStringSet("KBSsequences.fasta")
+
+# Performing an Alignment using Muscle from Ape package 
+aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
+
+# Convert Alignment File to DNAbin Object 
+dna.bin <- as.DNAbin(aln)
+dna.bin.1 <- as.phyDat(aln)
+
+# Create Distance Matrix with "raw" Model {ape}
+seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
+```
+
+
+## Constructing neighbor joining tree 
+
+```{r}
+# Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
+nj.tree <- bionj(seq.dist.raw)
+
+# Identify Outgroup Sequence
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Root the Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Plot the Rooted Tree{ape}
+par(mar = c(1,1,2,1) + 0.1)
+plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
+           direction = "right", cex = 1, label.offset = 1)
+add.scale.bar(cex = 0.7)
+```
+
+
+# Creating distance matrix with "F84" model in Ape # 
+
+```{r}
+# Create distance matrix with "F84" model {ape}
+seq.dist.F84 <- dist.dna(dna.bin, model = "F84", pairwise.deletion = FALSE)
+
+# Plot Distances from Different DNA Substitution Models
+par(mar = c(5, 5, 2, 1) + 0.1)
+plot(seq.dist.raw, seq.dist.F84,
+     pch = 20, col = "red", las = 1, asp = 1, xlim = c(0, 0.7), ylim = c(0, 0.7),
+     xlab = "Raw Distance", ylab = "F84 Distance")
+abline(b = 1, a = 0, lty = 2)
+text(0.65, 0.6, "1:1")
+
+# Make Neighbor Joining Trees Using Different DNA Substitution Models {ape}
+raw.tree <- bionj(seq.dist.raw)
+F84.tree <- bionj(seq.dist.F84)
+
+# Define Outgroups
+raw.outgroup <- match("Methanosarcina", raw.tree$tip.label)
+F84.outgroup <- match("Methanosarcina", F84.tree$tip.label)
+
+# Root the Trees {ape}
+raw.rooted <- root(raw.tree, raw.outgroup, resolve.root=TRUE)
+F84.rooted <- root(F84.tree, F84.outgroup, resolve.root=TRUE)
+
+# Make Cophylogenetic Plot {ape}
+layout(matrix(c(1,2), 1, 2), width = c(1, 1))
+par(mar = c(1, 1, 2, 0))
+plot.phylo(raw.rooted, type = "phylogram", direction = "right", show.tip.label=TRUE,
+           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "Raw")
+par(mar = c(1, 0, 2, 1))
+plot.phylo(F84.rooted, type = "phylogram", direction = "left", show.tip.label=TRUE,
+           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "F84") # Perfect Match #
+```
+
+
+## A. Mapping KBS growth curve changes on Neighbor Joining tree
+
+```{r}
+# Generate Neighbor Joining Tree Using F84 DNA Substitution Model {ape}
+nj.tree <- bionj(seq.dist.F84)
+
+# Define the Outgroup
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Create a Rooted Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Keep Rooted but Drop Outgroup Branch
+nj.rooted <- drop.tip(nj.rooted, "Methanosarcina")
+
+# Define Color Palette
+mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+
+# Normalized traits with na.omit
+traits.norm.na <- na.omit(traits.norm)
+
+# Map Growth curve parameter response to Rpf treatment {adephylo}
+par(mar=c(1,1,1,1) + 0.1)
+x <- phylo4d(nj.rooted, traits.norm.na)
+table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
+              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
+              edge.color = "black", edge.width = 2, box = FALSE,
+              col=mypalette(25), pch = 15, cex.symbol = 2.5,
+              ratio.tree = 0.75, cex.legend = 1, center = FALSE)
+```
+
+
+## B. Mapping KBS growth curve changes on Maximum liklihood tree
+
+```{r}
+# Load ML tree
+ml.tree <- read.tree("C:/Users/Venus/Github/Rpf/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
+
+# Define the outgroup
+outgroup <- match("Methanosarcina", ml.tree$tip.label)
+
+# Create a rooted tree {ape}
+ml.rooted <- root(ml.tree, outgroup, resolve.root = TRUE)
+
+# Keep rooted but drop outgroup branch
+ml.rooted <- drop.tip(ml.rooted, "Methanosarcina")
+
+# Define color palette
+mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+
+# Map traits {adephylo}
+par(mar=c(1,1,1,1) + 0.1)
+x <- phylo4d(ml.rooted, traits.norm.na)
+table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE, 
+              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
+              edge.color = "black", edge.width = 3, box = FALSE,
+              col=mypalette(25), pch = 15, cex.symbol = 2.5,
+              ratio.tree = 0.81, cex.legend = 1, center = TRUE)
+```
+
+
+# 5) Testing for Phylogenetic signal
+
+## A. Pagel's Lambda {geiger}
+
+```{r}
+# Rescale tree
+ml.lambda.0 <- rescale(ml.rooted, "lambda", 0)
+
+# Pagel lambda for growth curve response
+lambda.a.model <- fitContinuous(ml.rooted, traits.norm.na, model = "lambda")
+lambda.a.model.0 <- fitContinuous(ml.lambda.0, traits.norm.na, model = "lambda")
+brownian.a.model <- fitContinuous(ml.rooted, traits.norm.na)
+#nosig.a.model <- fitContinuous(ml.lambda.0, traits.norm.na)
+
+# Results: lambda = 0.96, shows that biomass yeild does not show phologenetic signal
+# Lambda = 0, umax , AIC value for umax = 35.132563 while brownian AIC = 40.605752 
+# Lambda = 0, L , AIC values = 37.209843 while brownian AIC = 46.056624
+# Appears to be no phylogenetic signal in response to Rpf treatment
+```
+
+
+## B. Blomberg's K
+
+```{r}
+# Blomberg 
+ml.rooted$edge.length <- ml.rooted$edge.length + 10^-7
+
+traits.p <- matrix(NA, 6, 3)
+colnames(traits.p) <- colnames(traits.norm.na)
+rownames(traits.p) <- c("K", "PIC.var.obs", "PIC.var.mean", "PIC.var.P", "PIC.var.z", "PIC.P.BH")
+
+for (i in 1:3) {
+  x <- as.matrix(traits.norm.na[ ,i, drop = FALSE])
+  out <- phylosignal(x, ml.rooted)
+  traits.p[1:5, i] <- round(t(out), 3)
+}
+
+traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
+
+# P-value are A = 0.052, umax = 0.392, L = 0.669. 
+# There is likely no phylogenetic signal 
+```
+
+
+# 6) Generate figure for Phylogenetic tree overlay with growth curve response
+
+```{r}
+# Subset the normalized trait data
+#umax <- traits.norm.na[ ,2]
+#A <- traits.norm.na[ ,1]
+#L <- traits.norm.na[ ,3]
+
+# Biomass
+# split plot
+#par(mfrow=c(1,2))
+# Plot maximum likelihood tree 
+#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
+#par(mar=c(5.1,0.1,2.1,2.1))
+# Plot barplot of normalized proportional changes
+#barplot(A[cw$tip.label],horiz=TRUE,names.arg="")
+#title(xlab="% Change in Biomass")
+
+# Lag time
+# split plot
+#par(mfrow=c(1,2))
+# Plot maximum likelihood tree 
+#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
+#par(mar=c(5.1,0.1,2.1,2.1))
+# Plot barplot of normalized proportional changes
+#barplot(L[cw$tip.label],horiz=TRUE,names.arg="")
+#title(xlab="% Change in lag time")
+
+# umax time
+# split plot
+#par(mfrow=c(1,2))
+# Plot maximum likelihood tree 
+#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
+#par(mar=c(5.1,0.1,2.1,2.1))
+# Plot barplot of normalized proportional changes
+#barplot(umax[cw$tip.label],horiz=TRUE,names.arg="")
+#title(xlab="% Change in umax")
+
+
+
+# Plot barplot of normalized proportional changes
+plotTree.barplot(ml.rooted,traits.norm.na, args.barplot = list(beside=TRUE, xlim = c(-3,3),
+    legend.text=TRUE,space=c(0,1.5),args.legend=list(x=-1.35,y=17), xlab="% Change in growth parameter with Rpf"))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
