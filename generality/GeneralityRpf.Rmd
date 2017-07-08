@@ -189,278 +189,29 @@ I performed Two Factor ANOVAs to test for significant effect of Rpf on growth cu
 ```{r}
 # Maximum growth rate # 
 # Two factor ANOVA # 
-umax.aov <- anova(lm(umax ~ Treatment*Genus, data=umax.gc))
-umax.aov
-# One factor ANOVA # 
-u1 <- aov(umax~Treatment*Genus, data=umax.gc)
-# Post hoc TukeyHSD 
-posthoc <- TukeyHSD(x=u1, 'Treatment', conf.level=0.95)
-posthoc
-# Multiple comparison Tukey
-hsd.u <- HSD.test(u1, 'Treatment')
-hsd.u # Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
+umax.aov <- aov(umax ~ Treatment*Genus, data=umax.gc)
+summary(umax.aov)
+TukeyHSD(umax.aov)
+posthoc <- TukeyHSD(x=umax.aov, 'Treatment', conf.level=0.95)
+# Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
 
 
 # Lag time to exponential growth # 
 # Two factor ANOVA # 
-L.aov <- anova(lm(L ~ Treatment*Genus, data=L.gc))
-L.aov
-# One factor ANOVA # 
-l1 <- aov(L~Treatment*Genus, data=L.gc)
-# Post hoc TukeyHSD 
-posthoc <- TukeyHSD(x=l1, 'Treatment', conf.level=0.95)
+L1 <- aov(L ~ Treatment*Genus, data=L.gc)
+summary(L1)
+posthoc <- TukeyHSD(x=L1, 'Treatment', conf.level=0.95)
+TukeyHSD(L1)
 posthoc
-# Multiple comparison Tukey
-hsd.l <- HSD.test(l1, 'Treatment')
-hsd.l # Interaction between genus and Treatment was significant (p = 0.0009556) #
-
 
 # Final biomass yeild # 
 # Two factor ANOVA # 
-A.aov <- anova(lm(A ~ Treatment*Genus, data=A.gc))
-A.aov
-# One factor ANOVA # 
 a1 <- aov(A~Treatment*Genus, data=A.gc)
-# Post hoc TukeyHSD 
+summary(a1)
+TukeyHSD(a1)
 posthoc <- TukeyHSD(x=a1, 'Treatment', conf.level=0.95)
 posthoc
-# Multiple comparison Tukey
-hsd <- HSD.test(a1, 'Treatment')
-hsd
-
 ```
-
-## 5) Phylogenetic Analysis 
-
-Generate a phylogenetic tree of KBS study strains and then overlay with bar graph of proportional changes with each growth curve parameter. 
-
-```{r, message=FALSE, warning=FALSE}
-# Set working directory 
-rm(list = ls())
-setwd("C:/Users/Venus/Github/Rpf/generality/")
-
-# Load packages # 
-package.list <- c('muscle', 'ape', 'seqinr', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper')
-for (package in package.list) {
-  if (!require(package, character.only=T, quietly=T)) { 
-    install.packages(package)
-    library(package, character.only=T)
-  } }
-```
-
-## Load data set 
-
-KBSsequences.fasta : A fasta file containing the 16s RNA sequences from each of the KBS strain studied.
-
-```{r}
-# Read FASTA file as DNAStringSet #
-dna <- readDNAStringSet("KBSsequences.fasta")
-```
-
-# Aligning KBS study sequences using Ape package # 
-
-```{r}
-# Performing an Alignment using Muscle from Ape package #
-aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
-
-# Convert Alignment File to DNAbin Object #
-dna.bin <- as.DNAbin(aln)
-dna.bin.1 <- as.phyDat(aln)
-
-# Create Distance Matrix with "raw" Model {ape}
-seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
-```
-
-# Constructing neighbor joining tree #
-
-```{r}
-# Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
-nj.tree <- bionj(seq.dist.raw)
-
-# Maximum Likelihood Algorithm to Construct Tree
-#fit <- pml(nj.tree, data=dna.bin.1)
-
-# Identify Outgroup Sequence
-outgroup <- match("Methanosarcina", nj.tree$tip.label)
-
-# Root the Tree {ape}
-nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
-
-# Plot the Rooted Tree{ape}
-par(mar = c(1,1,2,1) + 0.1)
-plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
-           direction = "right", cex = 1, label.offset = 1)
-add.scale.bar(cex = 0.7)
-```
-
-# Creating distance matrix with "F84" model in Ape # 
-
-```{r}
-# Create distance matrix with "F84" model {ape}
-seq.dist.F84 <- dist.dna(dna.bin, model = "F84", pairwise.deletion = FALSE)
-
-# Plot Distances from Different DNA Substitution Models
-par(mar = c(5, 5, 2, 1) + 0.1)
-plot(seq.dist.raw, seq.dist.F84,
-     pch = 20, col = "red", las = 1, asp = 1, xlim = c(0, 0.7), ylim = c(0, 0.7),
-     xlab = "Raw Distance", ylab = "F84 Distance")
-abline(b = 1, a = 0, lty = 2)
-text(0.65, 0.6, "1:1")
-
-# Make Neighbor Joining Trees Using Different DNA Substitution Models {ape}
-raw.tree <- bionj(seq.dist.raw)
-F84.tree <- bionj(seq.dist.F84)
-
-# Define Outgroups
-raw.outgroup <- match("Methanosarcina", raw.tree$tip.label)
-F84.outgroup <- match("Methanosarcina", F84.tree$tip.label)
-
-# Root the Trees {ape}
-raw.rooted <- root(raw.tree, raw.outgroup, resolve.root=TRUE)
-F84.rooted <- root(F84.tree, F84.outgroup, resolve.root=TRUE)
-
-# Make Cophylogenetic Plot {ape}
-layout(matrix(c(1,2), 1, 2), width = c(1, 1))
-par(mar = c(1, 1, 2, 0))
-plot.phylo(raw.rooted, type = "phylogram", direction = "right", show.tip.label=TRUE,
-           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "Raw")
-par(mar = c(1, 0, 2, 1))
-plot.phylo(F84.rooted, type = "phylogram", direction = "left", show.tip.label=TRUE,
-           use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "F84") # Perfect Match #
-```
-
-# Integrating KBS growth curve changes with Phylogeny # 
-
-```{r}
-# Import Growth Rate Data
-p.growth <- read.table("averagedgrowthcurve.txt", sep = "\t", header = TRUE, row.names = 1)
-
-# Generating a tree with traits #
-# Generate Neighbor Joining Tree Using F84 DNA Substitution Model {ape}
-nj.tree <- bionj(seq.dist.F84)
-
-# Define the Outgroup
-outgroup <- match("Methanosarcina", nj.tree$tip.label)
-
-# Create a Rooted Tree {ape}
-nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
-
-# Keep Rooted but Drop Outgroup Branch
-nj.rooted <- drop.tip(nj.rooted, "Methanosarcina")
-
-# Define Color Palette
-mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
-
-# Map Growth curve parameter response to Rpf treatment {adephylo}
-par(mar=c(1,1,1,1) + 0.1)
-x <- phylo4d(nj.rooted, p.growth)
-table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
-              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
-              edge.color = "black", edge.width = 2, box = FALSE,
-              col=mypalette(25), pch = 15, cex.symbol = 2.5,
-              ratio.tree = 0.6, cex.legend = 1, center = FALSE)
-```
-
-# Visualize Trees With Different Levels of Phylogenetic Signal {geiger} # 
-# Finding the Phylogenetic Signal #
-
-```{r}
-nj.lambda.5 <- rescale(nj.rooted, "lambda", 0.5)
-nj.lambda.0 <- rescale(nj.rooted, "lambda", 0)
-layout(matrix(c(1,2,3), 1, 3), width = c(1, 1, 1))
-par(mar=c(1,0.5,2,0.5)+0.1)
-plot(nj.rooted, main = "lambda = 1", cex = 0.7, adj = 0.5)
-plot(nj.lambda.5, main = "lamba = 0.5", cex = 0.7, adj = 0.5)
-plot(nj.lambda.0, main = "lamba = 0", cex = 0.7, adj = 0.5)
-
-# Generate Test Statistics for Comparing Phylogenetic Signal {geiger}
-fitContinuous(nj.rooted, p.growth, model = "lambda")
-fitContinuous(nj.lambda.0, p.growth, model = "lambda")
-
-# There is a phylogenetic signal of rpf responsiveness, lambda=1 and lambda=0 is AIC is the same #
-```
-
-## 6) Rpf generality figure based on phylogenetic tree construction 
-
-A trait based tree for 1st Rpf figure
-
-```{r, message=FALSE, warning=FALSE}
-# Set working directory # 
-rm(list = ls())
-setwd("C:/Users/Venus/Github/Rpf/generality/")
-# Load required packages # 
-package.list <- c('ape', 'seqinr', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper', 'phylolm', 'pmc', 'ggplot2', 'tidyr', 'dplyr', 'phangorn', 'pander', 'phytools') 
-for (package in package.list) {
-  if (!require(package, character.only=TRUE, quietly=TRUE)) {
-    install.packages(package)
-    library(package, character.only=TRUE)
-  }
-}
-```
-
-# Create trait database # 
-
-```{r}
-# Load growth curve traits # 
-
-# Standardize traits (mean=0, std = 1)
-traits <- data.frame(m2[,-1])
-rownames(traits) <- m2[,1] 
-traits.norm <- scale(traits)
-
-# Check scaling
-check.norm.mean <- round(colMeans(traits.norm, na.rm = TRUE), 1)
-check.norm.sd <- apply(traits.norm, 2, sd, na.rm = TRUE)
-
-
-```
-
-# Make tree using RAxML has already been done and contains all KBS study strains frm Dimensions/phylo --> I may have to go back and remove other strains
-
-# Map traits onto tree 
-
-```{r}
-# Load ML tree
-ml.tree <- read.tree("20170621_Tree//RAxML_bipartitionsBranchLabels.LTDE.ML")
-
-# Define the outgroup
-outgroup <- match("Methanosarcina", ml.tree$tip.label)
-
-# Create a rooted tree {ape}
-ml.rooted <- root(ml.tree, outgroup, resolve.root = TRUE)
-
-# Keep rooted but drop outgroup branch
-ml.rooted <- drop.tip(ml.rooted, "Methanosarcina")
-
-# Define color palette
-mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
-
-# Function to remove NAs from trait database *:
-# *https://cran.r-project.org/web/packages/adephylo/adephylo.pdf
-f1 <- function(vec){
-  if(any(is.na(vec))){
-  m <- mean(vec, na.rm=TRUE)
-  vec[is.na(vec)] <- m
-}
-  return(vec)
-}
-
-# Normalized traits with na.omit
-traits.norm.na <- f1(traits.norm)
-
-# Map traits {adephylo}
-par(mar=c(1,1,1,1) + 0.1)
-x <- phylo4d(ml.rooted, traits.norm.na)
-table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE, 
-              cex.label = 0.75, scale = FALSE, use.edge.length = FALSE, 
-              edge.color = "black", edge.width = 2, box = FALSE, 
-              col = mypalette(25), pch = 15, cex.symbol = 4.5, 
-              ratio.tree = 0.5, cex.legend = 1.5, center = FALSE)  
-
-```
-
-
-
 
 
 
