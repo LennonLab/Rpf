@@ -7,7 +7,7 @@ KBS0706	Actinobacteria	Actinobacteria	Actinomycetales	Corynebacteriaceae	Mycobac
 KBS0710	Proteobacteria	GammaProteobacteria	Pseudomonadales	Pseudomonadaceae	Pseudomonas	0.009572935	0.04786353	-0.255665667
 KBS0711	Proteobacteria	BetaProteobacteria	Burkholderiales	Oxalobacteraceae	Janthinobacterium	0.559687357	-0.07418162	-0.142106542
 KBS0712	Proteobacteria	BetaProteobacteria	Burkholderiales	Comamonadaceae	Variovorax	0.458799201	0.0926723	-0.001266807
-KBS0714	Actinobacteria	Actinobacteria	Actinomycetales	Micrococcaceae	Arthrobacter	-0.270985757	0.02460708	0.146410713
+KBS0714	Actinobacteria	Actinobacteria	Actinomycetales	Micrococcaceae	Arthrobacter	-0.270985757	0.02460708	-0.146410713
 KBS0715	Actinobacteria	Actinobacteria	Actinomycetales	Microbacteriaceae	Curtobacterium	0.032858942	0.086492	0.066390061
 KBS0724	Actinobacteria	Actinobacteria	Actinomycetales	Nocardiaceae	Rhodococcus	-0.109773926	-0.20073701	0.01390211
 KBS0812	Firmicutes	Bacilli	Bacillales	Bacillaceae	Bacillus	-0.062992773	0.24915311	-0.144082941

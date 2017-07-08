@@ -258,64 +258,47 @@ traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
 # 6) Generate figure for Phylogenetic tree overlay with growth curve response
 
 ```{r}
-# Subset the normalized trait data
-#umax <- traits.norm.na[ ,2]
-#A <- traits.norm.na[ ,1]
-#L <- traits.norm.na[ ,3]
-
-# Biomass
-# split plot
-#par(mfrow=c(1,2))
-# Plot maximum likelihood tree 
-#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
-#par(mar=c(5.1,0.1,2.1,2.1))
-# Plot barplot of normalized proportional changes
-#barplot(A[cw$tip.label],horiz=TRUE,names.arg="")
-#title(xlab="% Change in Biomass")
-
-# Lag time
-# split plot
-#par(mfrow=c(1,2))
-# Plot maximum likelihood tree 
-#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
-#par(mar=c(5.1,0.1,2.1,2.1))
-# Plot barplot of normalized proportional changes
-#barplot(L[cw$tip.label],horiz=TRUE,names.arg="")
-#title(xlab="% Change in lag time")
-
-# umax time
-# split plot
-#par(mfrow=c(1,2))
-# Plot maximum likelihood tree 
-#plotTree(cw<-reorder(ml.rooted),mar=c(5.1,2.1,2.1,0.1))
-#par(mar=c(5.1,0.1,2.1,2.1))
-# Plot barplot of normalized proportional changes
-#barplot(umax[cw$tip.label],horiz=TRUE,names.arg="")
-#title(xlab="% Change in umax")
-
-
-
-# Plot barplot of normalized proportional changes
-plotTree.barplot(ml.rooted,traits.norm.na, args.barplot = list(beside=TRUE, xlim = c(-3,3),
-    legend.text=TRUE,space=c(0,1.5),args.legend=list(x=-1.35,y=17), xlab="% Change in growth parameter with Rpf"))
+# Plot barplot of  proportional changes 
+tree <- plotTree.barplot(ml.rooted,traits, args.barplot = list(beside=TRUE, xlim = c(-1,1), axis.lty=1,
+    legend.text=TRUE,space=c(0,1.5),args.legend=list(x=-0.45,y=17), 
+    xlab="% Change in growth parameter with Rpf"))
 
 ```
 
 
+# 7) Rpf generality statistics 
+
+I performed Two Factor ANOVAs to test for significant effect of Rpf on growth curves and then post hoc TukeyHSF to determine direction of Rpf effect on each bacterial strains. 
+
+```{r}
+# Load growth parameter changes 
+gc <- read.csv("growthcurveparameters.csv", header=TRUE)
+
+# Maximum growth rate # 
+# Two factor ANOVA # 
+umax.aov <- aov(umax ~ Treatment*Strain, data=gc)
+summary(umax.aov)
+umax.aov <- aov(umax ~ Treatment, data=gc)
+TukeyHSD(umax.aov)
+# Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
 
 
+# Lag time to exponential growth # 
+# Two factor ANOVA # 
+L1 <- aov(L ~ Treatment*Genus, data=gc)
+summary(L1)
+posthoc <- TukeyHSD(x=L1, 'Treatment', conf.level=0.95)
+TukeyHSD(L1)
+posthoc
 
-
-
-
-
-
-
-
-
-
-
-
+# Final biomass yeild # 
+# Two factor ANOVA # 
+a1 <- aov(A~Treatment*Genus, data=gc)
+summary(a1)
+TukeyHSD(a1)
+posthoc <- TukeyHSD(x=a1, 'Treatment', conf.level=0.95)
+posthoc
+```
 
 
 
