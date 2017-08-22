@@ -1,7 +1,7 @@
 ---
 title: "Rpf - generality results"
 author: "Venus Kuo"
-date: "July 7, 2017"
+date: "August 8, 2017"
 output: html_document
 ---
 
@@ -34,15 +34,21 @@ Finally, I will perform Pagel's and Blomberg test of phylogenetic signal to Rpf 
 ```{r, message=FALSE, warning=FALSE}
 # Set working directory 
 rm(list = ls())
-setwd("C:/Users/Venus/Github/Rpf/generality/")
+setwd("~/GitHub/Rpf/generality/")
+#setwd("C:/Users/Venus/GitHub/Rpf/generality/")
 
 # Load packages # 
-package.list <- c('muscle', 'ape', 'seqinr', 'phytools', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper', 'plyr', 'reshape')
+package.list <- c('ape', 'seqinr', 'phytools', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper', 'plyr', 'reshape')
 for (package in package.list) {
   if (!require(package, character.only=T, quietly=T)) { 
     install.packages(package)
     library(package, character.only=T)
   } }
+
+# To install muscle if package is not supported on R version # 
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("muscle")
+library(muscle)
 ```
 
 
@@ -93,7 +99,7 @@ seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
 ```
 
 
-## Constructing neighbor joining tree 
+## Constructing neighbor joining tree with outgroup
 
 ```{r}
 # Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
@@ -149,7 +155,7 @@ plot.phylo(F84.rooted, type = "phylogram", direction = "left", show.tip.label=TR
            use.edge.length = FALSE, adj = 0.5, cex = 0.6, label.offset = 2, main = "F84") # Perfect Match #
 ```
 
-
+# Mapping KBS tree to trait changes with Rpf treatment
 ## A. Mapping KBS growth curve changes on Neighbor Joining tree
 
 ```{r}
@@ -258,10 +264,13 @@ traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
 # 6) Generate figure for Phylogenetic tree overlay with growth curve response
 
 ```{r}
+sem <- read.table("sem.txt", sep = "\t", header = TRUE)
+
 # Plot barplot of  proportional changes 
-tree <- plotTree.barplot(ml.rooted,traits, args.barplot = list(beside=TRUE, xlim = c(-1,1), axis.lty=1,
-    legend.text=TRUE,space=c(0,1.5),args.legend=list(x=-0.45,y=17), 
+tree <- plotTree.barplot(ml.rooted,traits, args.barplot = list(beside=TRUE, xlim = c(-1,1), 
+    legend.text=TRUE,space=c(0,1.5),args.legend=list(x=-0.45,y=17),
     xlab="% Change in growth parameter with Rpf"))
+
 
 ```
 
