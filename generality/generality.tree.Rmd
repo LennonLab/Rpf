@@ -34,11 +34,11 @@ Finally, I will perform Pagel's and Blomberg test of phylogenetic signal to Rpf 
 ```{r, message=FALSE, warning=FALSE}
 # Set working directory 
 rm(list = ls())
-setwd("~/GitHub/Rpf/generality/")
+setwd("~/../GitHub/Rpf/generality/")
 #setwd("C:/Users/Venus/GitHub/Rpf/generality/")
 
 # Load packages # 
-package.list <- c('ape', 'seqinr', 'phytools', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'stats', 'RColorBrewer', 'caper', 'plyr', 'reshape')
+package.list <- c('ape', 'seqinr', 'phytools', 'phangorn', 'phylobase', 'adephylo', 'geiger', 'picante', 'ggplot2', 'stats', 'RColorBrewer', 'caper', 'plyr', 'reshape')
 for (package in package.list) {
   if (!require(package, character.only=T, quietly=T)) { 
     install.packages(package)
@@ -59,6 +59,9 @@ library(muscle)
 ```{r}
 # Import Growth Rate Data 
 traits <- read.table("traits.txt", sep = "\t", header = TRUE, row.names = 1)
+
+# Make Genus names as row names #
+row.names(traits) <- traits$Genus
 
 # Remove phylo info 
 traits <- traits[, -1:-5]
@@ -208,7 +211,7 @@ mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
 
 # Map traits {adephylo}
 par(mar=c(1,1,1,1) + 0.1)
-x <- phylo4d(ml.rooted, traits.norm.na)
+x <- phylo4d(ml.rooted, traits.norm.na) # I need to redo the ml.tree file output
 table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE, 
               cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
               edge.color = "black", edge.width = 3, box = FALSE,
@@ -288,7 +291,7 @@ gc <- read.csv("growthcurveparameters.csv", header=TRUE)
 umax.aov <- aov(umax ~ Treatment*Strain, data=gc)
 summary(umax.aov)
 umax.aov <- aov(umax ~ Treatment, data=gc)
-TukeyHSD(umax.aov)
+#TukeyHSD(umax.aov)
 # Rpf treatment within strain genus has a strong effect on umax (F = 2.7188, p=0.006854) #
 
 
@@ -297,18 +300,112 @@ TukeyHSD(umax.aov)
 L1 <- aov(L ~ Treatment*Genus, data=gc)
 summary(L1)
 posthoc <- TukeyHSD(x=L1, 'Treatment', conf.level=0.95)
-TukeyHSD(L1)
-posthoc
+#TukeyHSD(L1)
+#posthoc
 
 # Final biomass yeild # 
 # Two factor ANOVA # 
 a1 <- aov(A~Treatment*Genus, data=gc)
 summary(a1)
-TukeyHSD(a1)
+#TukeyHSD(a1)
 posthoc <- TukeyHSD(x=a1, 'Treatment', conf.level=0.95)
-posthoc
+#posthoc
 ```
 
 
+## Phylogenetic distance matrix 
 
+```{r}
+# Calculate phylogenetic distance matrix # 
+phydist <- cophenetic.phylo(nj.tree)
+pd <- as.data.frame(phydist)
+pd0714 <- t(pd[9,1:12])
+traits.norm.db$pd0714 <- pd0714
+ordered<-traits.norm.db[with(traits.norm.db, order(pd0714)), ]
+```
+
+Make scatter plot figure
+
+```{r}
+#jpeg('rplot.jpg')
+# Biomass yeild #
+plot.new()
+#par(mfrow=c(1,3))
+plot(traits.norm.db$A~pd0714, ordered, xlab = "Phylogenetic distance to Micrcoccus", ylab = "Normalized proportonal change of biomass yeild", main = "Rpf effect on A"  )
+abline(lm(traits.norm.db$A~pd0714))
+
+A.lm <- lm(A ~ pd0714, data=ordered)
+modsum <- summary(A.lm)
+r2 = modsum$adj.r.squared
+my.p <- modsum$coefficients[2,4]
+rp = vector('expression',2)
+rp[1] = substitute(expression(italic(R)^2 == MYVALUE), 
+		list(MYVALUE = format(r2,dig=3)))[2]
+rp[2] = substitute(expression(italic(p) == MYOTHERVALUE), 
+		list(MYOTHERVALUE = format(my.p, digits = 2)))[2]
+legend('topright', legend = rp, bty = 'n')
+
+
+plot.new()
+# Maximum growth rate # 
+plot(traits.norm.db$umax~pd0714, ordered, xlab = "Phylogenetic distance to Micrcoccus", ylab = "Normalized proportonal change of umax", main = "Rpf effect on umax" )
+abline(lm(traits.norm.db$umax~pd0714))
+
+umax.lm = lm(umax ~ pd0714, data=ordered)
+modsum <- summary(umax.lm)
+r2 = modsum$adj.r.squared
+my.p <- modsum$coefficients[2,4]
+rp = vector('expression',2)
+rp[1] = substitute(expression(italic(R)^2 == MYVALUE), 
+		list(MYVALUE = format(r2,dig=3)))[2]
+rp[2] = substitute(expression(italic(p) == MYOTHERVALUE), 
+		list(MYOTHERVALUE = format(my.p, digits = 2)))[2]
+legend('topright', legend = rp, bty = 'n')
+
+# Lag time # 
+plot.new()
+plot(traits.norm.db$L~pd0714, ordered, xlab = "Phylogenetic distance to Micrcoccus", ylab = "Normalized proportonal change of L", main = "Rpf effect on L")
+abline(lm(traits.norm.db$L~pd0714))
+
+L.lm = lm(L ~ pd0714, data=ordered)
+modsum <- summary(L.lm)
+r2 = modsum$adj.r.squared
+my.p <- modsum$coefficients[2,4]
+rp = vector('expression',2)
+rp[1] = substitute(expression(italic(R)^2 == MYVALUE), 
+		list(MYVALUE = format(r2,dig=3)))[2]
+rp[2] = substitute(expression(italic(p) == MYOTHERVALUE), 
+		list(MYOTHERVALUE = format(my.p, digits = 2)))[2]
+legend('topright', legend = rp, bty = 'n')
+```
+
+```{r}
+# different way of plotting line graph
+cfu.line <- ggplot(data=ordered, aes(x=pd0714, y=A)) + 
+  geom_line()
+
+
+# Line graph CFU # 
+cfu.line <- ggplot(data=ordered, aes(x=pd0714, y=L)) + 
+  geom_line()
+
+cfu.plot <- cfu.line +    # Figure editting #
+  labs(x=expression(paste("Phylogenetic distance to Micrococcus sp.")), 
+       y="Proportional change in lag time") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size=20, margin =margin(0,15,0,0)),
+        axis.text.x=element_text(colour="black", size =20, margin =margin(15,0,0,0)),
+        axis.title.y = element_text(colour="black", size=15,  margin = margin(0,20,0,10)),
+        axis.title.x = element_text(colour="black", size=20,  margin=margin(20,0,0,0)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(-0.35, "cm"),
+        axis.ticks = element_line(size = 1.65, colour="black"),
+        legend.title = element_text(size=15),
+        legend.text=element_text(size=15)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
+
+cfu.plot
+
+```
 

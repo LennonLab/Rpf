@@ -1,4 +1,4 @@
->KBS0701
+>Pedobacter
 G----AGA-GTTT-GA--T-CC-T-G-G-CT--C-AG-G-A-T--G-A--A-CGCTAGCG
 GCA-GGC---C-T--AA-T--AC-A----T-G-----C----A-A-G--T-C--GA-A-C
 G-A---------T-A--TTT-----TCCAGCTTG-CTGGA---AG---AGAAAGTGGC-G
@@ -31,7 +31,7 @@ CCGGGCCTTGTACACACCGCCCGTCAAGCCATGGAAGTTGGGGGTACCTAAAGTATGTAA
 AAACCGA--TAACTGGGGCTAAG-T-CG--------------------------TAA--C
 --AA-GG-TAGC-CG-T--A-CCGGAA-----GG-TG-C-G--GC-TGGAATACCT----
 --------
->KBS0711
+>Janthinobacterium
 ------------------------------------------------------------
 ------GAAGAGTTTGATCCTGGCTCAGATTGAA---CGCTGGCG-GCATGCCTTACACA
 TGCAAGTCGAACGGCAGCAC------GGAGCTTG--CTCT---GGT--GGCGAGTGGC-G
@@ -64,7 +64,7 @@ CTTAACCGTAAGGAGGGCGCTTACCACGGTAGGATTCGTGACTGGGGTGAAGTC------
 CGGCTGGG-TCACC----------------------------------------------
 ------------------------------------------------------------
 --------
->KBS0712
+>Variovorax
 ------------------------------------------------------------
 -------------------------------------------------T-C--G--A-C
 G-----------G-CAGCGC-----GGGAGCAA---TCCT---GGC--GGCGAGTGGC-G
@@ -97,7 +97,7 @@ G--AGCAAACAGGATTAGATACCCTGGTAGTCCACGCCCTAAACGATGT-----------
 ------------------------------------------------------------
 ------------------------------------------------------------
 --------
->KBS0710
+>Pseudomonas
 --------------------------------------A---------------------
 ------------------------------------------------------------
 ---------------------------------------------------------C-G
@@ -130,7 +130,7 @@ CATA-GGAGACTGCCGGGGTCAACTCG-GAGGAAGGTGGGGATGA-----------C---
 ------------------------------------------------------------
 ------------------------------------------------------------
 --------
->KBS0705
+>Azospirillium
 -----------------------------------------------GGCATA-GCG---
 C-A--GC---T----AC-C-----A----T--G----C------A-G--T-C--GA-A-C
 G-C-----------------------CCCGCAA---G------------GGGAGTGGC-G
@@ -163,7 +163,7 @@ ACGAACTGGAGC-TAATCCCT-AAGCCC-------GTTC-TCATTCCG-------G----
 ------------------------------------------------------------
 ------------------------------------------------------------
 --------
->KBS0812
+>Bacillus
 ------------------------------------------------------------
 ----------------------------------------------G--T-C--GA-G-C
 G-G---------A-C--AGA---T-GGGAGCTTG-CTCCCT--GA---TGTTAGCGGC-G
@@ -196,7 +196,7 @@ CCGGGCCTTGTACACACCGCCCGTCACACCACGAGAGTTTGTAACACCCGAAGTCGGTGA
 G-ACAGAN-T--TT-GGGT-AAG-------------------------------TAA--C
 --AA--------------------------------------------------------
 --------
->KBS0702
+>Arthrobacter1
 ------GAGAGTTTGA--T-CC-T-G-G-CT--C-AG-G-A-T--G-A--A-CGCTGGCG
 GCG-TGC---T-T--AA-C--AC-A----T-G-----C----A-A-G--T-C--GA-A-C
 G-A---------T-G---ATC-C---GGTGCTTG-CACC--G--GG--GATTAGTGGC-G
@@ -229,7 +229,7 @@ CCGGGCCTTGTACACACCGCCCGTCAAGTCACGAAAGTTGGTAACACCCGAAGCCGGTGG
 GGACTGG--CGATTGGGACTAAG-T-CG--------------------------TAA--C
 --AA-GG-TAGC-CG-T--A-CCGGAA-----------GGTGCGGCTGGATCACCTC---
 --------
->KBS0703
+>Arthrobacter2
 ------GAGAGTTTGA--T-CC-T-G-G-CT--C-AG-G-A-T--G-A--A-CGCTGGCG
 GCG-TGC---T-T--AA-C--AC-A----T-G-----C----A-A-G--T-C--GA-A-C
 G-A---------T-G---ACC-C---GGTGCTTG-CACC--G--GT--GATTAGTGGC-G
@@ -262,7 +262,7 @@ CCCCTT-------------------A--------T-------------------------
 ------------------------------------------------------------
 ------------------------------------------------------------
 -------T
->KBS0714
+>Micrococcus
 -----GGAGAGTTTGA--T-CC-T---GGCT--C-AG-G--------ATGAACGCTGGCG
 GCG-TGC---T-T--AA-C--AC-A----T-G-----C----A-A-G--T-C--GA-A-C
 G-A---------T-G--AAGC-C----CAGCTTG-CTG-G-G-TG---GATTAGTGGC-G
@@ -295,7 +295,7 @@ CCGGGCCTTGTACACACCGCCCGTCAAGTCACGAAAGTTGGTAACACCCGAAGCCGGTGG
 GGACCAG--CGATTGGGACTAAG-T-CG--------------------------TAA--C
 --AA-GG-TAGC-CG-T--A-CCGGAA-----------GGTGCGGCTGGATCACCTC---
 --------
->KBS0706
+>Mycobacterium
 --------------------------------------G-T----------------GCG
 GGG-TGC---T-T--AC-C--AT-G-----------------C-A-G--T-C--GT-A-C
 G-----------G-AA-AGG--CC---CTTCG-G---GG----TA---CTCGAGTGGC-G
@@ -328,7 +328,7 @@ CCCTTTCCTTGCGGGCC-------------------------------------------
 ATGTT----------GGA------------------------------------------
 ------------------------------------------------------------
 --------
->KBS0724
+>Rhodococcus
 GAGA-----GTTT-GA--T-CC-T-G-G-CT--C-AG-G-A-C--G-A--A-CGCTGGCG
 GCG-TGC---T-T--AA-C--AC-A----T-G-----C----A-A-G--T-C--GA-G-C
 G-----------G-TA-AGG--CC---TTTCG-G---GG----TA---CACGAGCGGC-G
@@ -361,7 +361,7 @@ CCGGGCCTTGTACACACCGCCCGTCACGTCATGAAAGTCGGTAACACCCGAAGCCGGTGG
 GGATCGG--CGATTGGGACGAAG-T-CG--------------------------TAA--C
 --AA-GG-TAGC-CG-T--A-CCGGAA-----GG-TG-C-G--GC-TGGATCACCT---C
 --------
->KBS0715
+>Curtobacterium
 GG---AGA-GTTT-GA--T-CC-T-G-G-CT--C-AG-G-A-C--G-A--A-CGCTGGCG
 GCG-TGC---T-T--AA-C--AC-A----T-G-----C----A-A-G--T-C--GA-A-C
 G-A---------T-G--ATG--C---CCAGCTTG-CTGG-G--TG---GATTAGTGGC-G
