@@ -14,7 +14,7 @@ Overview: measured growth (OD600) over time on Micrococcus (KBS0714) with vs. wi
 ```{r}
 rm(list=ls())
 getwd()
-setwd("C:/Users/Venus/Github/Rpf/growth")
+setwd("~/../Github/Rpf/growth")
 ```
 
 # Load packages
@@ -43,7 +43,7 @@ colnames(od.rpf)[1:3] <- c("hour", "rpf.mean", "rpf.sem")
 
 # Make figure
 ```{r}
-png(filename="C:/Users/Venus/Github/Rpf/growth/growth.curve.png",
+png(filename="~/../Github/Rpf/growth/growth.curve.png",
     width = 1200, height = 700, res = 96*2)
 
 plot.new()
@@ -78,24 +78,29 @@ axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25,
 axis(side = 4, labels = F, lwd.ticks = 2, 
    at = c(0, 1, 2, 3, 4))
 
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 2, 0),
+axis(side = 1, lwd.ticks = 2, cex.axis = 1, las = 1, mgp = c(1, 1, 0),
     labels = c(0, 100, 200, 300, 400, 500, 600), at = c(0, 100, 200, 300, 400, 500, 600))
 
-axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1, 
    at = c(0, 100, 200, 300, 400, 500, 600))
 
 mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
-      line = -2, adj = 0.6)
+      line = -4.5, adj = 0.6)
 
 mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
-      line = -2.5, adj = 0.5)
+      line = -4, adj = 0.5)
 
 
 # Add late ODs from controls
-lines(od.late[,1], od.late[,2], lty=2, col="black", lwd = 2)
+#lines(od.late[,1], od.late[,2], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,3], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,4], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,5], lty=2, col="black", lwd = 2)
+
+points(od.late[,1], od.late[,2], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
+#points(od.late[,1], od.late[,3], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
+#points(od.late[,1], od.late[,4], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
+#points(od.late[,1], od.late[,5], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
 
 #dev.off()
 #graphics.off()

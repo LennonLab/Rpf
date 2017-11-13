@@ -6,15 +6,15 @@ output: html_document
 ---
 
 # Set Directory
-```{r}
+```{r, message=FALSE, warning=FALSE}
 rm(list=ls())
 getwd()
-setwd("C:/Users/Venus/Github/Rpf/mutant")
+setwd("~/../Github/Rpf/mutant")
 ```
 
 # Load packages
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 require("ggplot2")
 require("plyr")
 ```
