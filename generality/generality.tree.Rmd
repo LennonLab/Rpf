@@ -245,7 +245,7 @@ brownian.a.model <- fitContinuous(ml.rooted, traits.norm.na)
 
 ```{r}
 # Blomberg 
-nj.rooted$edge.length <- ml.rooted$edge.length + 10^-7
+ml.rooted$edge.length <- ml.rooted$edge.length + 10^-7
 
 traits.p <- matrix(NA, 6, 3)
 colnames(traits.p) <- colnames(traits.norm.na)
@@ -259,7 +259,7 @@ for (i in 1:3) {
 
 traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
 
-# P-value are A = 0.052, umax = 0.392, L = 0.669. 
+# P-value are A = 0.955, umax = 0.534, L = 0.534. 
 # There is likely no phylogenetic signal 
 ```
 
@@ -269,10 +269,23 @@ traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
 ```{r}
 sem <- read.table("sem.txt", sep = "\t", header = TRUE)
 
+traits.L <- traits[ , 3]
+L <- as.data.frame(traits.norm.db$L)
+row.names(L)<- row.names(traits)
+name <- as.character("L")
+colnames(L) <- name
+
+
+traits.A <- traits[ , 3]
+A <- as.data.frame(traits.norm.db$A)
+row.names(A)<- row.names(traits)
+name <- as.character("A")
+colnames(A) <- name
+  
 # Plot barplot of  proportional changes 
-tree <- plotTree.barplot(ml.rooted, traits , args.barplot = list(beside=TRUE, xlim = c(-0.5,1), 
+tree <- plotTree.barplot(ml.rooted, A , args.barplot = list(beside=TRUE, xlim = c(-1.5,1.5), 
     legend.text=TRUE,space=c(0,0.5),args.legend=list(x=1,y=40),
-    xlab="% Change in growth parameter with Rpf"))
+    xlab="% Change in biomass yeild with Rpf"))
 
 
 ```

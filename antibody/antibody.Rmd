@@ -47,7 +47,7 @@ biomass.means.sem <- transform(biomass.means.sem, lower=mean-sem, upper=mean+sem
 # Barplot of final biomass based on treatment for pub figures # 
 biomass.barplot + geom_errorbar(aes(ymax=upper, ymin=lower),
                               position=position_dodge(0.65), data=biomass.means.sem, width = 0.2, size=1) +
-  labs(x="Treatment", y="Biomass Yeild (OD600)") +
+  labs(x="Treatment", y="Biomass Yield (OD600)") +
   theme_classic() +
   scale_fill_manual(values="White") +
   theme(axis.text.y=element_text(colour="black", size=16),
