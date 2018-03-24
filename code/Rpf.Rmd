@@ -1,0 +1,150 @@
+---
+title: "Rpf"
+author: "Jay T. Lennon and Venus Kuo"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+```{r}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf")
+```
+
+## Load packages and functions
+```{r}
+require("png")
+require("bbmle")
+require("drc")
+require("ggplot2")
+require("grid")
+
+sem <- function(x) sqrt(var(x)/length(x))
+```
+
+## Enzymatic activity of recombinant Rpf
+
+```{r}
+enz <- read.table("data/enzyme.activity/brent.txt", sep="\t", header=TRUE)
+
+# Starting values for fitting Michaelis-Menten with maximum likelihood
+V = 85000 
+K = 0.025 
+Z = 100
+
+fit <- mle2(enz$abs ~ dnorm(mean = v * enz$sub / (k + enz$sub), sd = z), 
+    start = list(v = V, k = K, z = Z), data = enz)
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig1.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(enz[,1], enz[,2], xlim = c(-0.05, 0.3), 
+     ylim = c(-5000, 90000), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 20000, 40000, 60000, 80000), at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 0.10, 0.2, 0.3), at = c(0, 0.10, 0.2, 0.3))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 0.10, 0.2, 0.3))
+
+mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext('Relative Fluorescence', side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.6)
+
+# Plot function
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 6, lwd = 2.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig1.png")
+grid.raster(img)
+```
+
+## Growth of KBS0714 in response to recombinant Rpf
+
+```{r}
+growth <- read.table("data/growth.curve/growth.curve.txt", sep="\t", header=TRUE)
+head(growth)
+#growth.early <- growth.raw[1:29,]
+#growth.late <- growth.raw[29:nrow(growth.raw),1:5]
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig2.png",
+    width = 1200, height = 900, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+# Add +Rpf tubes
+plot(growth[,1], growth[,6], xlim = c(-25, 625), ylim = c(-0.5, 4), type = "l", 
+     lty = 2, col = "black", lwd = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, yaxt = "n", xaxt = "n")
+box(lwd = 2)
+
+points(growth[,1], growth[,7], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,8], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,9], type = "l", lty = 2, col = "black", lwd = 2)
+
+# Add -Rpf tubes
+points(growth[,1], growth[,2], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,3], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,4], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,5], type = "l", lty = 3, col = "black", lwd = 2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c("0", "1", "2", "3", "4"), 
+        at = c(0, 1, 2, 3, 4))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 1, 2, 3, 4))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(1, 1, 0),
+    labels = c(0, 200, 400, 600), at = c(0, 200, 400, 600))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1, 
+   at = c(0, 200, 400, 600))
+
+mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
+      line = -4.5, adj = 0.6)
+
+mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+text(400, 3.6, labels = "+Rpf", cex = 1)
+text(540, 3.6, labels = "-Rpf", cex = 1)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig2.png")
+grid.raster(img)
+
+# Growth curve statistics: lag time, umax, and yield
+
+```
