@@ -348,7 +348,7 @@ grid.raster(img)
     # Need to statistically test (t-test) effect of Rpf}
 ```
 
-## 6) Effets of recombinant Rpf from KBS0714 on diverse bacterial strains
+## 6) Effects of recombinant Rpf from KBS0714 on diverse bacterial strains
 
 ```{r}
     # Does rpf effect on growth parameters vary among species (ANOVA)
