@@ -9,7 +9,7 @@ output: html_document
 ```{r}
 rm(list=ls())
 getwd()
-setwd("C:/Users/Venus/Github/Rpf/antibody")
+setwd("~/../Github/Rpf/antibody")
 ```
 
 # Load packages
@@ -50,9 +50,9 @@ biomass.barplot + geom_errorbar(aes(ymax=upper, ymin=lower),
   labs(x="Treatment", y="Biomass Yield (OD600)") +
   theme_classic() +
   scale_fill_manual(values="White") +
-  theme(axis.text.y=element_text(colour="black", size=16),
-        axis.text.x=element_text(colour="black", size =14),
-        axis.title=element_text(size=18),
+  theme(axis.text.y=element_text(colour="black", size=20),
+        axis.text.x=element_text(colour="black", size =16),
+        axis.title=element_text(size=20),
         axis.title.y = element_text(colour="black",  margin = margin(0,25,0,10)),
         axis.title.x = element_text(colour="black",margin=margin(25,0,0,0)),
         panel.border = element_rect(linetype = "solid", colour = "black", size=1.5, fill=NA),

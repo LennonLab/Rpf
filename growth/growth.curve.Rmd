@@ -50,7 +50,7 @@ plot.new()
 par(mar = c(7, 7, 5, 7))
 
 plot(od.cont[,1], od.cont[,2], xlim = c(0, 625), ylim = c(-0.5, 4), type = "b", 
-     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     pch = 22, bg = "grey20", col = "black", cex = 2, ylab = "", xlab = "", 
      cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n",
      panel.first={
        arrows(x0 = od.cont[,1], y0 = od.cont[,2], y1 = od.cont[, 2] - od.cont[, 3],
@@ -97,7 +97,7 @@ lines(od.late[,1], od.late[,3], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,4], lty=2, col="black", lwd = 2)
 lines(od.late[,1], od.late[,5], lty=2, col="black", lwd = 2)
 
-points(od.late[,1], od.late[,2], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
+points(od.late[,1], od.late[,2], pch = 22, lty=2, bg="grey20", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
 #points(od.late[,1], od.late[,3], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
 #points(od.late[,1], od.late[,4], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)
 #points(od.late[,1], od.late[,5], pch = 22, lty=2, bg="grey", col="black", lwd = 2, cex = 2, cex.lab = 1.5)

@@ -195,7 +195,7 @@ table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
 
 ```{r}
 # Load ML tree
-ml.tree <- read.tree("C:/Users/Venus/Github/Rpf/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
+ml.tree <- read.tree("~/../GitHub/Rpf/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
 
 # Define the outgroup
 outgroup <- match("Methanosarcina", ml.tree$tip.label)
