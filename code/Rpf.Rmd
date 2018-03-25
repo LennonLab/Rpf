@@ -1,0 +1,357 @@
+---
+title: "Rpf"
+author: "Jay T. Lennon and Venus Kuo"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+```{r}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf")
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("bbmle")
+require("drc")
+require("ggplot2")
+require("grid")
+require("plyr")
+
+sem <- function(x) sqrt(var(x)/length(x))
+```
+
+## 1) Enzymatic activity of recombinant Rpf
+
+```{r}
+enz <- read.table("data/enzyme.activity/brent.txt", sep="\t", header=TRUE)
+
+# Starting values for fitting Michaelis-Menten with maximum likelihood
+V = 85000 
+K = 0.025 
+Z = 100
+
+fit <- mle2(enz$abs ~ dnorm(mean = v * enz$sub / (k + enz$sub), sd = z), 
+    start = list(v = V, k = K, z = Z), data = enz)
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig1.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(enz[,1], enz[,2], xlim = c(-0.05, 0.3), 
+     ylim = c(-5000, 90000), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 20000, 40000, 60000, 80000), at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 20000, 40000, 60000, 80000))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 0.10, 0.2, 0.3), at = c(0, 0.10, 0.2, 0.3))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 0.10, 0.2, 0.3))
+
+mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext('Relative Fluorescence', side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.6)
+
+# Plot function
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 2, lwd = 2.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig1.png")
+grid.raster(img)
+```
+
+## 2) Growth of KBS0714 in response to recombinant Rpf
+
+```{r}
+growth <- read.table("data/growth.curve/growth.curve.txt", sep="\t", header=TRUE)
+head(growth)
+#growth.early <- growth.raw[1:29,]
+#growth.late <- growth.raw[29:nrow(growth.raw),1:5]
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig2.png",
+    width = 1200, height = 900, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+# Add +Rpf tubes
+plot(growth[,1], growth[,6], xlim = c(-25, 625), ylim = c(-0.5, 4), type = "l", 
+     lty = 2, col = "black", lwd = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, yaxt = "n", xaxt = "n")
+box(lwd = 2)
+
+points(growth[,1], growth[,7], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,8], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,9], type = "l", lty = 2, col = "black", lwd = 2)
+
+# Add -Rpf tubes
+points(growth[,1], growth[,2], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,3], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,4], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,5], type = "l", lty = 3, col = "black", lwd = 2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c("0", "1", "2", "3", "4"), 
+        at = c(0, 1, 2, 3, 4))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 1, 2, 3, 4))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(1, 1, 0),
+    labels = c(0, 200, 400, 600), at = c(0, 200, 400, 600))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1, 
+   at = c(0, 200, 400, 600))
+
+mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
+      line = -4.5, adj = 0.6)
+
+mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+text(400, 3.6, labels = "+Rpf", cex = 1)
+text(540, 3.6, labels = "-Rpf", cex = 1)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig2.png")
+grid.raster(img)
+
+# Growth curve statistics: lag time, umax, and yield
+# Need to make plots to check that fits are reasonable
+# Need to collect paramaters (means +/- sem)
+# Need to statistically test (t-test) effect of Rpf
+```
+
+## 3) Antibody control
+
+```{r}
+antibody <- read.table("data/antibody/antibody.txt", header = TRUE, sep="\t")
+
+# Table
+rpf.mean <- aggregate(antibody$OD600 ~ Treatment, mean, data = antibody)
+rpf.sem <- aggregate(antibody$OD600 ~ Treatment, sem, data = antibody)
+LL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[1])
+UL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[2])
+table <- data.frame(rpf.mean[1], rpf.mean[2], rpf.sem[2],
+          LL.95[2], UL.95[2])
+colnames(table) <- c("Treatment", "mean", "sem", "LCI", "UCI")
+
+# ANOVA
+antibody.anova <- aov(OD600 ~ Treatment, data = antibody)
+summary(antibody.anova)
+  # reject null; P <0.0001
+TukeyHSD(antibody.anova)
+  # no difference between -Rpf and +Rpf,+anti.28
+  # no difference between + Rpf and +Rpf,+anti.0
+
+# Subset data
+no.rpf <- antibody[ which(antibody$Treatment == "Rpf-"),]
+plus.rpf <- antibody[ which(antibody$Treatment == "Rpf+"),]
+plus.rpf.anti.0 <- antibody[ which(antibody$Treatment == "Rpf+, Anti0+"),]
+plus.rpf.anti.28 <- antibody[ which(antibody$Treatment == "Rpf+, Anti28+"),]
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig3.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+antibody.point <- plot(jitter(rep(1, length(no.rpf$OD600)), amount = 0.1), no.rpf$OD600, 
+      ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
+      cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+points(jitter(rep(2.5, length(plus.rpf$OD600)), amount = 0.1), plus.rpf$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(3.5, length(plus.rpf.anti.0$OD600)), amount = 0.1), plus.rpf.anti.0$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4.5, length(plus.rpf.anti.28$OD600)), amount = 0.1), plus.rpf.anti.28$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+
+points(1, mean(no.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(2.5, mean(plus.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(3.5, mean(plus.rpf.anti.0$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4.5, mean(plus.rpf.anti.28$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+mtext(expression('Biomass (OD600)'), side = 2,
+      outer = FALSE, cex = 1.5, line = 3.6, adj = 0.5)
+
+# Major Axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2.5, 3.5, 4.5), labels = F)
+
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+box(lwd = 2)
+
+# Make x-axis labels
+mtext('-Rpf', side = 1, line = 4.5, at = 1, cex = 1.5)
+mtext('+Rpf', side = 1, line = 4.5, at = 3.5, cex = 1.5)
+mtext('-', side = 1, line = 0.75, at = 2.5, cex = 2)
+mtext('-', side = 1, line = 2.25, at = 2.5, cex = 2)
+mtext('+', side = 1, line = 0.75, at = 3.5, cex = 2)
+mtext('-', side = 1, line = 2.25, at = 3.5, cex = 2)
+mtext('+', side = 1, line = 0.75, at = 4.5, cex = 2)
+mtext('+', side = 1, line = 2.25, at = 4.5, cex = 2)
+mtext('Antibody', side = 1, line = 0.75, at = 5.8, cex = 1.5)
+mtext('Antigen', side = 1, line = 2.25, at = 5.7, cex = 1.5)
+
+segments(0.7, -1.1, 1.5, -1.1, col = "black", lwd = 2, xpd = TRUE)
+segments(2.25, -1.1, 4.75, -1.1, col = "black", lwd = 2, xpd = TRUE)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig3.png")
+grid.raster(img)
+```
+
+## 4) Dose-response curve of Rpf
+
+```{r}
+# load data
+dose.raw <- read.table("data/dose.response/dose.response.txt", header = TRUE, sep="\t")
+
+# calculate area of plate with bacteri
+area <- dose.raw$Pixels / (pi * dose.raw$Plate.Width * dose.raw$Plate.Height)
+dose.raw <- data.frame(dose.raw, area)
+
+# select 48 or 96 hrs
+biomass <- dose.raw[which(dose.raw$Hrs == 48),]
+
+# calculate total biomass across plates
+sum.area <- sum(biomass$area)
+
+# calcualte relative biomass on each plate with different Rpf concentrations
+rel.biomass <- biomass$area/sum.area
+dose <- data.frame(biomass, rel.biomass)
+
+# Starting values for fitting asymmetric Laplace with maximum likelihood
+A = 0.40 # Maximum biomass (15000)
+X = 45 # Optimum Rpf (55)
+K = 0.5 # Kappa; <1 right side decays slowly; >1 left side decays slowly (5)
+L = -0.5 # Lamba; peakiness (0.1); larger = flatter
+Z = 10 # Error (5)
+
+fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)* 
+            k ^sign(x - Rpf)), sd = z), start = list(a = A, x = X, k = K, l = L, z = Z), 
+            data = dose)
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig4.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(dose[,2], dose[,8], xlim = c(-25, 185), 
+     ylim = c(0, 0.5), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 0.25, 0.5), at = c(0, 0.25, 0.5))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 0.25, 0.5))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 50, 100, 150), at = c(0, 50, 100, 150))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 50, 100, 150))
+
+mtext('Rpf (nM)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext(expression(paste('Relative Biomass')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.6)
+
+# Plot function
+curve(coef(fit)[[1]] * exp(-(x-coef(fit)[[2]]) * coef(fit)[[4]] * sign(coef(fit)[[2]] - x) * 
+      coef(fit)[[3]]^sign(coef(fit)[[2]]-x)),from = 0, to = 160, add = TRUE, lty = 2, lwd = 2.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig4.png")
+grid.raster(img)
+```
+
+## 5) Rpf structural diversity
+
+```{r}
+# A) Targeted mutations of catalytic sites
+    # mutations of glutamate to alanine, lysine, and glutamine
+    # muralytic response (i.e., Enzchek) and growth responses
+    # Need to make plots to check that fits are reasonable
+    # Need to collect paramaters (means +/- sem)
+    # Need to statistically test (t-test) effect of Rpf}
+
+# B) Trunctation of Rpf: removal of LysM and alaline repeats 
+    # muralytic response (i.e., Enzchek) and growth responses
+    # Need to make plots to check that fits are reasonable
+    # Need to collect paramaters (means +/- sem)
+    # Need to statistically test (t-test) effect of Rpf}
+```
+
+## 6) Effects of recombinant Rpf from KBS0714 on diverse bacterial strains
+
+```{r}
+    # Does rpf effect on growth parameters vary among species (ANOVA)
+    # Are effects influenced by whether strain is Gram + vs. Gram -?
+    # Are effects influence by phylogeny?
+```
