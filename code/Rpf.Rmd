@@ -191,24 +191,24 @@ plot.new()
 par(mar = c(7, 7, 5, 7))
 
 antibody.point <- plot(jitter(rep(1, length(no.rpf$OD600)), amount = 0.1), no.rpf$OD600, 
-      ylim = c(-0.2, 3.5), xlim = c(0.5, 4.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
+      ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
       cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
       las = 1, ylab = "", xlab = "")
       box(lwd = 2)
-points(jitter(rep(2, length(plus.rpf$OD600)), amount = 0.1), plus.rpf$OD600, pch = 21, 
+points(jitter(rep(2.5, length(plus.rpf$OD600)), amount = 0.1), plus.rpf$OD600, pch = 21, 
        bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
-points(jitter(rep(3, length(plus.rpf.anti.0$OD600)), amount = 0.1), plus.rpf.anti.0$OD600, pch = 21, 
+points(jitter(rep(3.5, length(plus.rpf.anti.0$OD600)), amount = 0.1), plus.rpf.anti.0$OD600, pch = 21, 
        bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
-points(jitter(rep(4, length(plus.rpf.anti.28$OD600)), amount = 0.1), plus.rpf.anti.28$OD600, pch = 21, 
+points(jitter(rep(4.5, length(plus.rpf.anti.28$OD600)), amount = 0.1), plus.rpf.anti.28$OD600, pch = 21, 
        bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
 
 points(1, mean(no.rpf$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
-points(2, mean(plus.rpf$OD600), pch = 21, col = "black", 
+points(2.5, mean(plus.rpf$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)  
-points(3, mean(plus.rpf.anti.0$OD600), pch = 21, col = "black", 
+points(3.5, mean(plus.rpf.anti.0$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
-points(4, mean(plus.rpf.anti.28$OD600), pch = 21, col = "black", 
+points(4.5, mean(plus.rpf.anti.28$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
 
 mtext(expression('Biomass (OD600)'), side = 2,
@@ -222,29 +222,29 @@ axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at=c(0, 1, 2, 3), labels = F)
 
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(1, 2, 3, 4), labels = F)
+     at = c(1, 2.5, 3.5, 4.5), labels = F)
 
-arrows(x0 = c(1,2,3,4), y0 = table$mean, y1 = table$LCI, angle = 90,
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$LCI, angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(1,2,3,4), y0 = table$mean, y1 = table$UCI, angle = 90,
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$UCI, angle = 90,
        length=0.1, lwd = 2)
 
 box(lwd = 2)
 
 # Make x-axis labels
-mtext('-Rpf', side = 1, line = 4.25, at = 1, cex = 1.5)
-mtext('+Rpf', side = 1, line = 4.25, at = 3, cex = 1.5)
-mtext('-', side = 1, line = 0.5, at = 2, cex = 2)
-mtext('-', side = 1, line = 2.0, at = 2, cex = 2)
-mtext('+', side = 1, line = 0.5, at = 3, cex = 2)
-mtext('-', side = 1, line = 2.0, at = 3, cex = 2)
-mtext('+', side = 1, line = 0.5, at = 4, cex = 2)
-mtext('+', side = 1, line = 2.0, at = 4, cex = 2)
-mtext('Antibody', side = 1, line = 0.5, at = 5, cex = 1.5)
-mtext('Antigen', side = 1, line = 2.0, at = 4.9, cex = 1.5)
+mtext('-Rpf', side = 1, line = 4.5, at = 1, cex = 1.5)
+mtext('+Rpf', side = 1, line = 4.5, at = 3.5, cex = 1.5)
+mtext('-', side = 1, line = 0.75, at = 2.5, cex = 2)
+mtext('-', side = 1, line = 2.25, at = 2.5, cex = 2)
+mtext('+', side = 1, line = 0.75, at = 3.5, cex = 2)
+mtext('-', side = 1, line = 2.25, at = 3.5, cex = 2)
+mtext('+', side = 1, line = 0.75, at = 4.5, cex = 2)
+mtext('+', side = 1, line = 2.25, at = 4.5, cex = 2)
+mtext('Antibody', side = 1, line = 0.75, at = 5.8, cex = 1.5)
+mtext('Antigen', side = 1, line = 2.25, at = 5.7, cex = 1.5)
 
-segments(0.8, -1.1, 1.3, -1.1, col = "black", lwd = 2, xpd = TRUE)
-segments(1.9, -1.1, 4.1, -1.1, col = "black", lwd = 2, xpd = TRUE)
+segments(0.7, -1.1, 1.5, -1.1, col = "black", lwd = 2, xpd = TRUE)
+segments(2.25, -1.1, 4.75, -1.1, col = "black", lwd = 2, xpd = TRUE)
 
 # Close Plot Device
 dev.off()
