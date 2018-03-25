@@ -17,17 +17,19 @@ setwd("~/GitHub/Rpf")
 ```
 
 ## Load packages and functions
+
 ```{r}
 require("png")
 require("bbmle")
 require("drc")
 require("ggplot2")
 require("grid")
+require("plyr")
 
 sem <- function(x) sqrt(var(x)/length(x))
 ```
 
-## Enzymatic activity of recombinant Rpf
+## 1) Enzymatic activity of recombinant Rpf
 
 ```{r}
 enz <- read.table("data/enzyme.activity/brent.txt", sep="\t", header=TRUE)
@@ -72,7 +74,7 @@ mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5,
 mtext('Relative Fluorescence', side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.6)
 
 # Plot function
-curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 6, lwd = 2.5)
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 2, lwd = 2.5)
 
 # Close Plot Device
 dev.off()
@@ -83,7 +85,7 @@ img <- readPNG("figures/Fig1.png")
 grid.raster(img)
 ```
 
-## Growth of KBS0714 in response to recombinant Rpf
+## 2) Growth of KBS0714 in response to recombinant Rpf
 
 ```{r}
 growth <- read.table("data/growth.curve/growth.curve.txt", sep="\t", header=TRUE)
@@ -146,5 +148,210 @@ img <- readPNG("figures/Fig2.png")
 grid.raster(img)
 
 # Growth curve statistics: lag time, umax, and yield
+# Need to make plots to check that fits are reasonable
+# Need to collect paramaters (means +/- sem)
+# Need to statistically test (t-test) effect of Rpf
+```
 
+## 3) Antibody control
+
+```{r}
+antibody <- read.table("data/antibody/antibody.txt", header = TRUE, sep="\t")
+
+# Table
+rpf.mean <- aggregate(antibody$OD600 ~ Treatment, mean, data = antibody)
+rpf.sem <- aggregate(antibody$OD600 ~ Treatment, sem, data = antibody)
+LL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[1])
+UL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[2])
+table <- data.frame(rpf.mean[1], rpf.mean[2], rpf.sem[2],
+          LL.95[2], UL.95[2])
+colnames(table) <- c("Treatment", "mean", "sem", "LCI", "UCI")
+
+# ANOVA
+antibody.anova <- aov(OD600 ~ Treatment, data = antibody)
+summary(antibody.anova)
+  # reject null; P <0.0001
+TukeyHSD(antibody.anova)
+  # no difference between -Rpf and +Rpf,+anti.28
+  # no difference between + Rpf and +Rpf,+anti.0
+
+# Subset data
+no.rpf <- antibody[ which(antibody$Treatment == "Rpf-"),]
+plus.rpf <- antibody[ which(antibody$Treatment == "Rpf+"),]
+plus.rpf.anti.0 <- antibody[ which(antibody$Treatment == "Rpf+, Anti0+"),]
+plus.rpf.anti.28 <- antibody[ which(antibody$Treatment == "Rpf+, Anti28+"),]
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig3.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+antibody.point <- plot(jitter(rep(1, length(no.rpf$OD600)), amount = 0.1), no.rpf$OD600, 
+      ylim = c(-0.2, 3.5), xlim = c(0.5, 4.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
+      cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+points(jitter(rep(2, length(plus.rpf$OD600)), amount = 0.1), plus.rpf$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(3, length(plus.rpf.anti.0$OD600)), amount = 0.1), plus.rpf.anti.0$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(plus.rpf.anti.28$OD600)), amount = 0.1), plus.rpf.anti.28$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+
+points(1, mean(no.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(2, mean(plus.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(3, mean(plus.rpf.anti.0$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4, mean(plus.rpf.anti.28$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+mtext(expression('Biomass (OD600)'), side = 2,
+      outer = FALSE, cex = 1.5, line = 3.6, adj = 0.5)
+
+# Major Axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3, 4), labels = F)
+
+arrows(x0 = c(1,2,3,4), y0 = table$mean, y1 = table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1,2,3,4), y0 = table$mean, y1 = table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+box(lwd = 2)
+
+# Make x-axis labels
+mtext('-Rpf', side = 1, line = 4.25, at = 1, cex = 1.5)
+mtext('+Rpf', side = 1, line = 4.25, at = 3, cex = 1.5)
+mtext('-', side = 1, line = 0.5, at = 2, cex = 2)
+mtext('-', side = 1, line = 2.0, at = 2, cex = 2)
+mtext('+', side = 1, line = 0.5, at = 3, cex = 2)
+mtext('-', side = 1, line = 2.0, at = 3, cex = 2)
+mtext('+', side = 1, line = 0.5, at = 4, cex = 2)
+mtext('+', side = 1, line = 2.0, at = 4, cex = 2)
+mtext('Antibody', side = 1, line = 0.5, at = 5, cex = 1.5)
+mtext('Antigen', side = 1, line = 2.0, at = 4.9, cex = 1.5)
+
+segments(0.8, -1.1, 1.3, -1.1, col = "black", lwd = 2, xpd = TRUE)
+segments(1.9, -1.1, 4.1, -1.1, col = "black", lwd = 2, xpd = TRUE)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig3.png")
+grid.raster(img)
+```
+
+## 4) Dose-response curve of Rpf
+
+```{r}
+# load data
+dose.raw <- read.table("data/dose.response/dose.response.txt", header = TRUE, sep="\t")
+
+# calculate area of plate with bacteri
+area <- dose.raw$Pixels / (pi * dose.raw$Plate.Width * dose.raw$Plate.Height)
+dose.raw <- data.frame(dose.raw, area)
+
+# select 48 or 96 hrs
+biomass <- dose.raw[which(dose.raw$Hrs == 48),]
+
+# calculate total biomass across plates
+sum.area <- sum(biomass$area)
+
+# calcualte relative biomass on each plate with different Rpf concentrations
+rel.biomass <- biomass$area/sum.area
+dose <- data.frame(biomass, rel.biomass)
+
+# Starting values for fitting asymmetric Laplace with maximum likelihood
+A = 0.40 # Maximum biomass (15000)
+X = 45 # Optimum Rpf (55)
+K = 0.5 # Kappa; <1 right side decays slowly; >1 left side decays slowly (5)
+L = -0.5 # Lamba; peakiness (0.1); larger = flatter
+Z = 10 # Error (5)
+
+fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)* 
+            k ^sign(x - Rpf)), sd = z), start = list(a = A, x = X, k = K, l = L, z = Z), 
+            data = dose)
+
+# Plot data
+png(filename="~/GitHub/Rpf/figures/Fig4.png",
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(dose[,2], dose[,8], xlim = c(-25, 185), 
+     ylim = c(0, 0.5), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 0.25, 0.5), at = c(0, 0.25, 0.5))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 0.25, 0.5))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 50, 100, 150), at = c(0, 50, 100, 150))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 50, 100, 150))
+
+mtext('Rpf (nM)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext(expression(paste('Relative Biomass')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.6)
+
+# Plot function
+curve(coef(fit)[[1]] * exp(-(x-coef(fit)[[2]]) * coef(fit)[[4]] * sign(coef(fit)[[2]] - x) * 
+      coef(fit)[[3]]^sign(coef(fit)[[2]]-x)),from = 0, to = 160, add = TRUE, lty = 2, lwd = 2.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("figures/Fig4.png")
+grid.raster(img)
+```
+
+## 5) Rpf structural diversity
+
+```{r}
+# A) Targeted mutations of catalytic sites
+    # mutations of glutamate to alanine, lysine, and glutamine
+    # muralytic response (i.e., Enzchek) and growth responses
+    # Need to make plots to check that fits are reasonable
+    # Need to collect paramaters (means +/- sem)
+    # Need to statistically test (t-test) effect of Rpf}
+
+# B) Trunctation of Rpf: removal of LysM and alaline repeats 
+    # muralytic response (i.e., Enzchek) and growth responses
+    # Need to make plots to check that fits are reasonable
+    # Need to collect paramaters (means +/- sem)
+    # Need to statistically test (t-test) effect of Rpf}
+```
+
+## 6) Effets of recombinant Rpf from KBS0714 on diverse bacterial strains
+
+```{r}
+    # Does rpf effect on growth parameters vary among species (ANOVA)
+    # Are effects influenced by whether strain is Gram + vs. Gram -?
+    # Are effects influence by phylogeny?
 ```
