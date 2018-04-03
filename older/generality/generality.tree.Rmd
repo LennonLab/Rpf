@@ -195,7 +195,7 @@ table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
 
 ```{r}
 # Load ML tree
-ml.tree <- read.tree("~/../GitHub/Rpf/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
+ml.tree <- read.tree("~/../GitHub/Rpf/older/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
 
 # Define the outgroup
 outgroup <- match("Methanosarcina", ml.tree$tip.label)
@@ -270,7 +270,7 @@ traits.p[6, ] <- round(p.adjust(traits.p[4, ], method = "BH"), 3)
 sem <- read.table("sem.txt", sep = "\t", header = TRUE)
 
 traits.L <- traits[ , 3]
-L <- as.data.frame(traits.norm.db$L)
+L <- as.data.frame(traits.norm.na$L)
 row.names(L)<- row.names(traits)
 name <- as.character("L")
 colnames(L) <- name
@@ -283,9 +283,9 @@ name <- as.character("A")
 colnames(A) <- name
   
 # Plot barplot of  proportional changes 
-tree <- plotTree.barplot(ml.rooted, A , args.barplot = list(beside=TRUE, xlim = c(-1.5,1.5), 
+tree <- plotTree.barplot(ml.rooted, L , args.barplot = list(beside=TRUE, xlim = c(-1.5,1.5), 
     legend.text=TRUE,space=c(0,0.5),args.legend=list(x=1,y=40),
-    xlab="% Change in biomass yeild with Rpf"))
+    xlab="% Change in Lag time yeild with Rpf"))
 
 
 ```
