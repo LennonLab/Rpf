@@ -404,7 +404,7 @@ grid.raster(img)
 #gc.E54Q # Weird samples: A5,A6,A7,A8, A12 - The entire E54Q treatment 
 #gc.trnc # Weird samples: A1
 
-# Weird sample growth parameters as a result of experiment
+# Remove odd data points 
 #gc.E54K <- gc.E54K[c(-5,-10) ,]
 #gc.trnc <- gc.trnc[-1, ]
 
@@ -508,8 +508,8 @@ enz.E54K.t <- t.test(Absorbance~Protein, data=enz.E54K)
 enz.E54K.t # Non-signficant effect (p=0.1937) 
 enz.E54Q.t <- t.test(Absorbance~Protein, data=enz.E54Q) 
 enz.E54Q.t # Marginally non-significant effect (p=0.05599) 
-enz.trnc.t <- t.test(Absorbance~Protein, data=enz.trnc) # In the process of redoing this assay
-enz.trnc.t
+#enz.trnc.t <- t.test(Absorbance~Protein, data=enz.trnc) # In the process of redoing this assay
+#enz.trnc.t
 
 # Subset data by protein type for figure
 enz.E54A.wt <- enz[ which(enz$Protein == "E54AWT"), ]
@@ -665,11 +665,11 @@ mtext(expression('Final Biomass Yield (OD600)'), side = 2,
       outer = TRUE, cex = 1.5, line = 1 , adj = 0.5)
 
 # Plot EnzCheck Assay results
-plot(jitter(rep(2, length(E54A.e$Absorbance)), amount = 0.1), E54A.e$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(enz.E54A$Absorbance)), amount = 0.1), enz.E54A$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(enz.E54A.wt$Absorbance)), amount = 0.1), enz.E54A.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(E54A.e$Absorbance), pch = 21, col = "black", 
+points(2, mean(enz.E54A$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 points(4, mean(enz.E54A.wt$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
@@ -696,11 +696,11 @@ arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54AWT")], y1 
 mtext('E54A', side = 1, line = 1, at = 2, cex = 1)
 mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
-plot(jitter(rep(2, length(E54K.e$Absorbance)), amount = 0.1), E54K.e$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(enz.E54K$Absorbance)), amount = 0.1), enz.E54K$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(enz.E54K.wt$Absorbance)), amount = 0.1), enz.E54K.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(E54K.e$Absorbance), pch = 21, col = "black", 
+points(2, mean(enz.E54K$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 points(4, mean(enz.E54K.wt$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
@@ -727,11 +727,11 @@ arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54KWT")], y1 
 mtext('E54K', side = 1, line = 1, at = 2, cex = 1)
 mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
-plot(jitter(rep(2, length(E54Q.e$Absorbance)), amount = 0.1), E54Q.e$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(enz.E54Q$Absorbance)), amount = 0.1), enz.E54Q$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(enz.E54Q.wt$Absorbance)), amount = 0.1), enz.E54Q.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(E54Q.e$Absorbance), pch = 21, col = "black", 
+points(2, mean(enz.E54Q$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 points(4, mean(enz.E54Q.wt$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
@@ -758,11 +758,11 @@ arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54QWT")], y1 
 mtext('E54Q', side = 1, line = 1, at = 2, cex = 1)
 mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
-plot(jitter(rep(2, length(trnc.e$Absorbance)), amount = 0.1), trnc.e$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(enz.trnc$Absorbance)), amount = 0.1), enz.trnc$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(enz.Trnc.wt$Absorbance)), amount = 0.1), enz.Trnc.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(trnc.e$Absorbance), pch = 21, col = "black", 
+points(2, mean(enz.trnc$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 points(4, mean(enz.Trnc.wt$Absorbance), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
@@ -805,19 +805,15 @@ grid.raster(img)
 
 ## 6) Effects of recombinant Rpf from KBS0714 on diverse bacterial strains
 
-## Double check the proportional difference, something seems off
 ```{r}
-rm(list=ls())
-getwd()
-#setwd("~/GitHub/Rpf")
-knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') # For Venus's computer
-
-# Load gompertz output data from run 1
+# A) Generate % change in growth curve parameter with Rpf treatment among KBS0714 strains # 
+# Load gompertz output data 
 gc.param.1 <- read.delim("data/generality/20160320_generality_gomp_param_output.txt", sep = ",", header = TRUE)
 gc.param.2 <- read.delim("data/generality/20160323_generality_gomp_param_output.txt", sep = ",", header = TRUE)
+# Load well key for growth curve assay 
 gc.key <- read.delim("data/generality/generality.gc.well.key.txt", sep = "\t", header = TRUE)
 
-# Label information in both datasets 
+# Label phylogenetic and treatment information in datasets 
 key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
 gc.param.1 <- cbind(gc.param.1,key.1)
 key.2 <- subset(gc.key, Run_Num == "2", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
@@ -830,19 +826,17 @@ gc <- gc[ ,c(-(1:2),-(6:10))]
 # Some biomass yeild values are negative, force to be positive # 
 gc$A <- abs(gc$A)
 
-
-# A) Calculate % change with Rpf treatment of each growth curve parameter
-    # Biomass yeild (A)
+# Calculate % Biomass yeild (A) change
 a <- as.data.frame(gc$A[which(gc$Treatment == "Rpf+")])
 b <- as.data.frame(gc$A[which(gc$Treatment == "Rpf-")])
 df <- c()
 df <- as.data.frame(((a-b)/b)*100)
-    # Umax
+# Calculate % Maximum growth rate (umax) change
 c <- as.data.frame(gc$umax[which(gc$Treatment == "Rpf+")])
 d <- as.data.frame(gc$umax[which(gc$Treatment == "Rpf-")])
 df.u <- as.data.frame(((c-d)/d)*100)
 df <- cbind(df, df.u)
-    # Lag time 
+# Calculate % Lag time (L) change
 e <- gc$L[which(gc$Treatment == "Rpf+")]
 f <- gc$L[which(gc$Treatment == "Rpf-")]
 df.l <- as.data.frame(((e-f)/f)*100)
@@ -855,28 +849,323 @@ df.info.2 <- as.data.frame(gc[73:96, 4:7])
 df.info <- rbind(df.info.1, df.info.2)
 df <- cbind(df, df.info) 
 
-# Remove outlier data points
-df <- df[c(-5, -6, -8, -38), ]
+# Remove outlier data points: Reps with some parameter exceeding 100% change
+df <- df[c(-5, -6, -7, -8, -32, -33, -34), ] # Remove Art1
+#df <- df[c(-6, -8), ]
 
-# Construct traits dataset used for phylogenetic trait analysis 
-# Averaging traits by genus 
-df.A.means <- ddply(df, c("Genus"), summarise,
+df.norm <- as.data.frame(scale(df[,1:3]))
+df.norm <- cbind(df.norm, df[, 4:7])
+
+
+# Generate L table of means, sems, and CIs 
+df.means <- aggregate(L ~ Genus, mean, data= df.norm)
+df.sems <- aggregate(L ~ Genus, sem, data = df.norm)
+df.LL.95 <- aggregate(df.norm$L ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[1])
+df.UL.95 <- aggregate(df.norm$L ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[2])
+df.table <- data.frame(df.means[1], df.means[2], df.sems[2],
+                       df.LL.95[2], df.UL.95[2])
+colnames(df.table) <- c( "Genus",  "mean", "sem", "LCI", "UCI")
+
+# Order df.table
+label <- c(2,7,6,3,8,1,5,11,9,4,10)
+df.table$PD <- label
+df.table <- df.table[order(df.table$PD), ]
+
+
+# Generate A table of means, sems, and CIs
+df.A.means <- aggregate(A ~ Genus, mean, data= df.norm)
+df.A.sems <- aggregate(A ~ Genus, sem, data = df.norm)
+df.A.LL.95 <- aggregate(df.norm$A ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[1])
+df.A.UL.95 <- aggregate(df.norm$A ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[2])
+df.A.table <- data.frame(df.A.means[1], df.A.means[2], df.A.sems[2],
+                       df.A.LL.95[2], df.A.UL.95[2])
+colnames(df.A.table) <- c( "Genus",  "mean", "sem", "LCI", "UCI")
+
+# Order df.table
+label <- c(2,7,6,3,8,1,5,11,9,4,10)
+df.A.table$PD <- label
+df.A.table <- df.A.table[order(df.A.table$PD), ]
+
+
+# Subset data for figure 
+df.norm.Ped <- df.norm[ which(df.norm$Genus == "Pedobacter"), ]
+#df.norm.Art1 <- df.norm[ which(df.norm$Genus == "Arthrobacter1"), ]
+df.norm.Art2 <- df.norm[ which(df.norm$Genus == "Arthrobacter2"), ]
+df.norm.Myc <- df.norm[ which(df.norm$Genus == "Mycobacterium"), ]
+df.norm.Azo <- df.norm[ which(df.norm$Genus == "Azospirillium"), ]
+df.norm.Rho <- df.norm[ which(df.norm$Genus == "Rhodococcus"), ]
+df.norm.Pse <- df.norm[ which(df.norm$Genus == "Pseudomonas"), ]
+df.norm.Jan <- df.norm[ which(df.norm$Genus == "Janthinobacterium"), ]
+df.norm.Var <- df.norm[ which(df.norm$Genus == "Variovorax"), ]
+df.norm.Mic <- df.norm[ which(df.norm$Genus == "Micrococcus"), ]
+df.norm.Cur <- df.norm[ which(df.norm$Genus == "Curtobacterium"), ]
+df.norm.Bac <- df.norm[ which(df.norm$Genus == "Bacillus"), ]
+```
+
+
+```{r}
+# Generate figure
+png(filename="~/../GitHub/Rpf/figures/Fig5.png",  
+    width = 1200, height = 1200, res = 96*2)
+
+plot.new()
+par(oma=c(3,5,0,0), mar=c(1,2,1,1), mfrow = c(2,1),  byrow = TRUE)
+
+# Lag time
+plot(jitter(rep(1, length(df.norm.Mic$L)), amount = 0.1), df.norm.Mic$L,
+     ylim = c(-3, 3.5), xlim = c(0.5, 11.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+           cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+#points(jitter(rep(2, length(df.norm.Art1$L)), amount = 0.1), df.norm.Art1$L, pch = 21, 
+#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(2, length(df.norm.Art2$L)), amount = 0.1), df.norm.Art2$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(3, length(df.norm.Cur$L)), amount = 0.1), df.norm.Cur$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(df.norm.Rho$L)), amount = 0.1), df.norm.Rho$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(5, length(df.norm.Myc$L)), amount = 0.1), df.norm.Myc$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(6, length(df.norm.Bac$L)), amount = 0.1), df.norm.Bac$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Azo$L)), amount = 0.1), df.norm.Azo$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Jan$L)), amount = 0.1), df.norm.Jan$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(9, length(df.norm.Pse$L)), amount = 0.1), df.norm.Pse$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(10, length(df.norm.Var$L)), amount = 0.1), df.norm.Var$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(11, length(df.norm.Ped$L)), amount = 0.1), df.norm.Ped$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+
+points(1, mean(df.norm.Mic$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+#points(2, mean(df.norm.Art1$L), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)  
+points(2, mean(df.norm.Art2$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(3, mean(df.norm.Cur$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4, mean(df.norm.Rho$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(5, mean(df.norm.Myc$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(6, mean(df.norm.Bac$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Azo$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Jan$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(9, mean(df.norm.Pse$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(10, mean(df.norm.Var$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(1, mean(df.norm.Ped$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+# Y-axis label
+mtext(expression('Lag Time (L)'), side = 2,
+      outer = FALSE, cex = 1.25, line = 3, adj = 0.5)
+
+# Major Axes
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = F, at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(-3, -2, -1, 0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3,4,5,6,7,8,9,10,11), labels = F)
+
+# Add dotted line at zero
+abline(h=0, col="black", lty =2, lwd=2)
+
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.table$mean, y1 = df.table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.table$mean, y1 = df.table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+box(lwd = 2)
+
+
+# Biomass Yield
+plot(jitter(rep(1, length(df.norm.Mic$A)), amount = 0.1), df.norm.Mic$A,
+     ylim = c(-3, 3.5), xlim = c(0.5, 11.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+           cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+#points(jitter(rep(2, length(df.norm.Art1$A)), amount = 0.1), df.norm.Art1$A, pch = 21, 
+#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(2, length(df.norm.Art2$A)), amount = 0.1), df.norm.Art2$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(3, length(df.norm.Cur$A)), amount = 0.1), df.norm.Cur$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(df.norm.Rho$A)), amount = 0.1), df.norm.Rho$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(5, length(df.norm.Myc$A)), amount = 0.1), df.norm.Myc$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(6, length(df.norm.Bac$A)), amount = 0.1), df.norm.Bac$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Azo$A)), amount = 0.1), df.norm.Azo$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Jan$A)), amount = 0.1), df.norm.Jan$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(9, length(df.norm.Pse$A)), amount = 0.1), df.norm.Pse$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(10, length(df.norm.Var$A)), amount = 0.1), df.norm.Var$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(11, length(df.norm.Ped$A)), amount = 0.1), df.norm.Ped$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+
+points(1, mean(df.norm.Mic$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+#points(2, mean(df.norm.Art1$A), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)  
+points(2, mean(df.norm.Art2$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(3, mean(df.norm.Cur$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4, mean(df.norm.Rho$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(5, mean(df.norm.Myc$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(6, mean(df.norm.Bac$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Azo$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Jan$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(9, mean(df.norm.Pse$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(10, mean(df.norm.Var$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(11, mean(df.norm.Ped$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+# Outer Y-axis label
+mtext(expression('Normalized % Change with Rpf Treatment'), side = 2,
+      outer = TRUE, cex = 1.5, line = 3, adj = 0.5)
+# Y-axis label
+mtext(expression('Biomass Yield (A)'), side = 2,
+      outer = FALSE, cex = 1.25, line = 3, adj = 0.5)
+
+# Major Axes
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("Mic", "Art2", "Cur", "Rho", "Myc", "Bac", "Azo", "Jan", "Pse", "Var", "Ped"), 
+     at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(-3, -2, -1, 0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3,4,5,6,7,8,9,10,11), labels = F)
+
+# Add dotted line at zero
+abline(h=0, col="black", lty =2, lwd=2)
+
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.A.table$mean, y1 = df.A.table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.A.table$mean, y1 = df.A.table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+box(lwd = 2)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/../GitHub/Rpf/figures/Fig5.png")
+grid.raster(img)
+
+```
+
+
+
+
+```{r}
+# B) Generate simple bargraph to look at the effects of Rpf on growth curve parameters
+library(ggplot2)
+
+# Calculate mean and sem 
+# Biomass yeild (A)
+generality.A.means.sem <- ddply(gc, c("Genus","Treatment"), summarise,
                    mean=mean(A), sem=sd(A)/sqrt(length(A)))
-df.umax.means <- ddply(df, c("Genus"), summarise,
+generality.A.means.sem <- transform(generality.A.means.sem, lower=mean-sem, upper=mean+sem)
+# Maximum growth rate (umax)
+generality.umax.means.sem <- ddply(gc, c("Genus", "Treatment"), summarise,
                    mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
-df.L.means <- ddply(df, c("Genus"), summarise,
+generality.umax.means.sem <- transform(generality.umax.means.sem, lower=mean-sem, upper=mean+sem)
+# Lag time (L)
+generality.L.means.sem <- ddply(gc, c("Genus","Treatment"), summarise,
                    mean=mean(L), sem=sd(L)/sqrt(length(L)))
-# Combine datasets to construct traits dataset
-traits <- cbind(df.A.means,df.umax.means,df.L.means)
-# Construct sem dataset 
-sem <- traits[ ,c(1,3,6,9)]
-colnames(sem) <- c("Genus", "A", "umax", "L")
-# Construct traits dataset
-traits <- traits[ , c(1,2,5,8)]   # The trait values do not make sense. Contradiction in KBS0714 results
-colnames(traits) <- c("Genus", "A", "umax", "L")
+generality.L.means.sem <- transform(generality.L.means.sem, lower=mean-sem, upper=mean+sem)
 
 
-# B) Phylognetic analysis of generality assay results # 
+# Bargraph figure 
+A.bar <- ggplot(data=generality.A.means.sem, aes(x=Genus, y=mean, fill=Treatment)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+A.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.A.means.sem, width = 0.35, size=1) +
+  labs(x =  "Genus" ,y="Biomass Yield") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12, angle =45,hjust = 1),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+umax.bar <- ggplot(data=generality.umax.means.sem, aes(x=Genus, y=mean, fill=Treatment)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+umax.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.umax.means.sem, width = 0.35, size=1) +
+  labs(x =  "Genus" ,y="Maximum Growth Rate") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12, angle =45,hjust = 1),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+L.bar <- ggplot(data=generality.L.means.sem, aes(x=Genus, y=mean, fill=Treatment)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+L.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.L.means.sem, width = 0.35, size=1) +
+  labs(x =  "Genus" ,y="Lag Time") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12, angle =45,hjust = 1),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+
+
+# B) Phylognetic analysis of generality assay results 
 # Load required packages 
 require('ape')
 require('seqinr')
@@ -892,15 +1181,30 @@ require('reshape')
 require('muscle')
 require('RColorBrewer')
 
-# Import data #
-# Reordering rows so that tree will recognize data
-target <- c("Pedobacter", "Arthrobacter1", "Arthrobacter2", "Azospirillium", "Mycobacterium", 
-            "Pseudomonas", "Janthinobacterium", "Variovorax", "Micrococcus", "Curtobacterium",
-            "Rhodococcus", "Bacillus")
-traits <- traits[match(target,traits$Genus), ]
+# Construct traits dataset used for phylogenetic trait analysis 
+# Averaging traits by genus 
+df.A.means <- ddply(df, c("Genus"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+df.umax.means <- ddply(df, c("Genus"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+df.L.means <- ddply(df, c("Genus"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+
+# Combine datasets to construct traits dataset
+traits <- cbind(df.A.means,df.umax.means,df.L.means)
+
+# Construct sem dataset 
+sem <- traits[ ,c(1,3,6,9)]
+colnames(sem) <- c("Genus", "A", "umax", "L")
+
+# Construct traits dataset
+traits <- traits[ , c(1,2,5,8)]   # The trait values do not make sense. Contradiction in KBS0714 results
+colnames(traits) <- c("Genus", "A", "umax", "L")
+
 
 # Make Genus names as row names 
 row.names(traits) <- traits$Genus
+# Remove Genus name column
 traits <- traits[, -1]
 
 # Standardize traits (mean=0, std = 1)
@@ -921,9 +1225,11 @@ traits.norm <- as.data.frame(traits.norm)
 traits.norm$Genus <- traits$Genus
 #traits.norm <- traits.norm[c(4,1,2,3)]
 
+##################################################
+# Below part should not work becuase traits should be missing Art1 now
 
 # Generating Phylogenetic ML tree
-# Load ML tree
+# Load ML tree 
 ml.tree <- read.tree("data/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
 
 # Define the outgroup
@@ -948,7 +1254,7 @@ table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
               ratio.tree = 0.7, cex.legend = 1, center = TRUE)
 
 
-# A) Does rpf effect on growth parameters vary among species (ANOVA)
+# C) Does rpf effect on growth parameters vary among species (ANOVA)
 # two-factor ANOVA
 generality.umax.anova <- aov(umax ~ Treatment*Genus, data = gc)
 summary(generality.umax.anova)
@@ -967,7 +1273,7 @@ summary(generality.A.anova)
     # Highly significant interaction effect of Rpf and strain (p < 0.001)
       # Reject null hypothesis --> Rpf differentially affected strains growth parameters
 
-# C) Statistical tests: Are effects influenced by whether strain is Gram + vs. Gram -?
+# D) Statistical tests: Are effects influenced by whether strain is Gram + vs. Gram -?
 # two-factor ANOVA
 # Gram status 
 generality.g.umax.anova <- aov(umax ~ Treatment*Gram, data = gc)
@@ -987,7 +1293,7 @@ summary(generality.g.A.anova)
       # Fail to reject null hypothesis --> Gram status does not influence response to Rpf 
 
 
-# D) Statistical test: Testing for Phylogenetic signal
+# E) Statistical test: Testing for Phylogenetic signal
 # Pagel's Lambda 
 # Rescale tree
 ml.lambda.5 <- rescale(ml.rooted, "lambda", 0.5)
@@ -1020,25 +1326,22 @@ traits.p # Look at the output of Blomberg's K
     # PIC.P.BH corrected p value show non-significant effects of Rpf on growth parameters
 
 
-#E) Generate figure to show Rpf effects on phylogeny 
-
-# I still haven't figured out how to add the sem to the figures below 
+#F) Generate figure to show Rpf effects on phylogeny 
 #sem <- read.table("sem.txt", sep = "\t", header = TRUE)
 
 #traits.L <- traits[ , 3]
-traits.norm <- as.data.frame(traits.norm)
-L <- as.data.frame(traits.norm.db$L)
+L <- as.data.frame(traits.norm$L)
 row.names(L)<- row.names(traits)
 name <- as.character("L")
 colnames(L) <- name
 
-traits.A <- traits[ , 1]
+#traits.A <- traits[ , 1]
 A <- as.data.frame(traits.norm$A)
 row.names(A)<- row.names(traits)
 name <- as.character("A")
 colnames(A) <- name
 
-traits.u <- traits[ , 2]
+#traits.u <- traits[ , 2]
 u <- as.data.frame(traits.norm$umax)
 row.names(u)<- row.names(traits)
 name <- as.character("umax")
@@ -1046,7 +1349,7 @@ colnames(u) <- name
   
 # Plot barplot of  proportional changes 
 # Lag time
-tree.L <- plotTree.barplot(ml.rooted, L , args.barplot = list(beside=TRUE, xlim = c(-2,2), 
+tree.L <- plotTree.barplot(ml.rooted, L , args.barplot = list(beside=TRUE, xlim = c(-2,3), 
     legend.text=TRUE,space=c(0,0.5),args.legend=list(x=1,y=40),
     xlab="% Change in Lag time with Rpf"))
 # Biomass yield
@@ -1057,14 +1360,6 @@ tree.A <- plotTree.barplot(ml.rooted, A , args.barplot = list(beside=TRUE, xlim 
 tree.u <- plotTree.barplot(ml.rooted, u , args.barplot = list(beside=TRUE, xlim = c(-1.5,2), 
     legend.text=TRUE,space=c(0,0.5),args.legend=list(x=1,y=40),
     xlab="% Change in maximum growth rate with Rpf"))
-
-library(ggplot2)
-
-# Simple bargraph figure 
-ggplot(data=gc, aes(x=Genus, y=A, fill=Treatment)) + 
-  geom_bar(stat="identity", position = "dodge") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 ```
 
 
