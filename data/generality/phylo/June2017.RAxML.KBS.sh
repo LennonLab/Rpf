@@ -5,13 +5,13 @@
 #PBS -m abe
 #PBS -j oe
 
-module load raxml/8.0.26
+module load raxml/gnu/8.2.11
 
 # cd into the directory with your alignment
 
 cd /N/dc2/projects/Lennon_Sequences/RpfGenerality/
 
-raxmlHPC-PTHREADS -T 4 -f a -m GTRGAMMA -p 12345 -x 12345 -o Methanosarcina -# autoMRE -s ./20170630_KBS -n KBS.ML
+raxmlHPC-PTHREADS -T 4 -f a -m GTRGAMMA -p 12345 -x 12345 -o Methanosarcina -# autoMRE -s ./20180405_KBS -n KBS.ML
 
 # -T = number of threads
 # -f = specifies bootstrapping algorithm with ML generating tree at same time
