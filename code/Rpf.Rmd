@@ -162,7 +162,6 @@ grid.raster(img)
 # 2) Need to collect paramaters (means +/- sem)
 # Load output of modified Gompertz model 
 growth.p <- read.delim("data/growth.curve/parameters.txt",  sep=",", header=TRUE)
-head(growth.p)
 
 # Add treatments (A1-4 = Rpf-, B1-4 = Rpf+)
 Treatment <- c("Rpf-", "Rpf-","Rpf-","Rpf-", "Rpf+","Rpf+","Rpf+","Rpf+")
@@ -333,7 +332,7 @@ fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)*
 #png(filename="~/GitHub/Rpf/figures/Fig4.png",
 #    width = 1200, height = 1200, res = 96*2)
 
-png(filename="~/../GitHub/Rpf/figures/Fig4.png",  # Just Venus's computer
+png(filename="~/../GitHub/Rpf/figures/Fig5.png",  # Just Venus's computer
     width = 1200, height = 1200, res = 96*2)
 
 plot.new()
@@ -373,7 +372,7 @@ dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("figures/Fig4.png")
+img <- readPNG("figures/Fig5.png")
 grid.raster(img)
 ```
 
@@ -534,11 +533,18 @@ colnames(enz.table) <- c("Protein", "mean", "sem", "LCI", "UCI")
 
 
 # Generate Figure for structural diversity
-png(filename="~/../GitHub/Rpf/figures/Fig4.png",
+#png(filename="~/../GitHub/Rpf/figures/Fig4.png",
+#    width = 1200, height = 1200, res = 96*2)
+#plot.new()
+#par(oma=c(0,3,0,0), mar=c(2,2,0.5,6), mfrow = c(4,2))
+#layout(matrix(c(1,5,2,6,3,7,4,8), 4, 2, byrow = TRUE))
+
+# Alternative figure with no enz results #
+png(filename="~/../GitHub/Rpf/figures/Fig4alt.png",
     width = 1200, height = 1200, res = 96*2)
 plot.new()
-par(oma=c(0,3,0,0), mar=c(2,2,0.5,6), mfrow = c(4,2))
-layout(matrix(c(1,5,2,6,3,7,4,8), 4, 2, byrow = TRUE))
+par(oma=c(0,4,0,0), mar=c(3,4,2,1), mfrow=c(2,2))
+
 # Plot final biomass growth curve results
 plot(jitter(rep(2, length(od.E54A$OD600)), amount = 0.1), od.E54A$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
@@ -568,8 +574,8 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54AWT")], y1 
        length=0.1, lwd = 2)
 
 # Make x-axis labels
-mtext('E54A', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+mtext('E54A', side = 1, line = 1.5, at = 2, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
 
 plot(jitter(rep(2, length(od.E54K$OD600)), amount = 0.1), od.E54K$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
@@ -598,8 +604,8 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 
 arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54KWT")], angle = 90,
        length=0.1, lwd = 2)
 # Make x-axis labels
-mtext('E54K', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+mtext('E54K', side = 1, line = 1.5, at = 2, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
 
 plot(jitter(rep(2, length(od.E54Q$OD600)), amount = 0.1), od.E54Q$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
@@ -628,8 +634,8 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 
 arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54QWT")], angle = 90,
        length=0.1, lwd = 2)
 # Make x-axis labels
-mtext('E54Q', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+mtext('E54Q', side = 1, line = 1.5, at = 2, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
 
 plot(jitter(rep(2, length(od.trnc$OD600)), amount = 0.1), od.trnc$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
@@ -658,123 +664,119 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 
 arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 = od.table$UCI[which(od.table$Treatment == "TrncWT")], angle = 90,
        length=0.1, lwd = 2)
 # Make x-axis labels
-mtext('Trnc', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+mtext('Trnc', side = 1, line = 1.5, at = 2, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
 # Add outside Y axis 
-mtext(expression('Final Biomass Yield (OD600)'), side = 2,
-      outer = TRUE, cex = 1.5, line = 1 , adj = 0.5)
+mtext(expression('Biomass (OD600)'), side = 2,
+      outer = TRUE, cex = 2, line = 1 , adj = 0.5)
 
 # Plot EnzCheck Assay results
-plot(jitter(rep(2, length(enz.E54A$Absorbance)), amount = 0.1), enz.E54A$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
-box(lwd=2) 
-points(jitter(rep(4, length(enz.E54A.wt$Absorbance)), amount = 0.1), enz.E54A.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
+#plot(jitter(rep(2, length(enz.E54A$Absorbance)), amount = 0.1), enz.E54A$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+#box(lwd=2) 
+#points(jitter(rep(4, length(enz.E54A.wt$Absorbance)), amount = 0.1), enz.E54A.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(enz.E54A$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(enz.E54A.wt$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
+#points(2, mean(enz.E54A$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
+#points(4, mean(enz.E54A.wt$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
 
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at=c(0, 25000, 50000, 75000), labels = F)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
+#axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
+#axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at=c(0, 25000, 50000, 75000), labels = F)
+#axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
+#axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54A")], y1 = enz.table$LCI[which(enz.table$Protein == "E54A")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54A")], y1 = enz.table$UCI[which(enz.table$Protein == "E54A")], angle = 90,
-       length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54AWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54AWT")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54AWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54AWT")], angle = 90,
-       length=0.1, lwd = 2)
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54A")], y1 = enz.table$LCI[which(enz.table$Protein == "E54A")], angle = 90, length = 0.1, lwd = 2)
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54A")], y1 = enz.table$UCI[which(enz.table$Protein == "E54A")], angle = 90,length=0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54AWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54AWT")], angle = 90, length = 0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54AWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54AWT")], angle = 90, length=0.1, lwd = 2)
 
 # Make x-axis labels
-mtext('E54A', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+#mtext('E54A', side = 1, line = 1, at = 2, cex = 1)
+#mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
-plot(jitter(rep(2, length(enz.E54K$Absorbance)), amount = 0.1), enz.E54K$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
-box(lwd=2) 
-points(jitter(rep(4, length(enz.E54K.wt$Absorbance)), amount = 0.1), enz.E54K.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
+#plot(jitter(rep(2, length(enz.E54K$Absorbance)), amount = 0.1), enz.E54K$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+#box(lwd=2) 
+#points(jitter(rep(4, length(enz.E54K.wt$Absorbance)), amount = 0.1), enz.E54K.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(enz.E54K$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(enz.E54K.wt$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
+#points(2, mean(enz.E54K$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
+#points(4, mean(enz.E54K.wt$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
 
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at=c(0, 25000, 50000, 75000), labels = F)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
+#axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
+#axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at=c(0, 25000, 50000, 75000), labels = F)
+#axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
+#axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54K")], y1 = enz.table$LCI[which(enz.table$Protein == "E54K")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54K")], y1 = enz.table$UCI[which(enz.table$Protein == "E54K")], angle = 90,
-       length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54KWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54KWT")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54KWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54KWT")], angle = 90,
-       length=0.1, lwd = 2)
-
-# Make x-axis labels
-mtext('E54K', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
-
-plot(jitter(rep(2, length(enz.E54Q$Absorbance)), amount = 0.1), enz.E54Q$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
-box(lwd=2) 
-points(jitter(rep(4, length(enz.E54Q.wt$Absorbance)), amount = 0.1), enz.E54Q.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
-
-points(2, mean(enz.E54Q$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(enz.E54Q.wt$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
-
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at=c(0, 25000, 50000, 75000), labels = F)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
-
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54Q")], y1 = enz.table$LCI[which(enz.table$Protein == "E54Q")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54Q")], y1 = enz.table$UCI[which(enz.table$Protein == "E54Q")], angle = 90,
-       length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54QWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54QWT")], angle = 90,
-       length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54QWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54QWT")], angle = 90,
-       length=0.1, lwd = 2)
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54K")], y1 = enz.table$LCI[which(enz.table$Protein == "E54K")], angle = 90,
+#       length = 0.1, lwd = 2)
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54K")], y1 = enz.table$UCI[which(enz.table$Protein == "E54K")], angle = 90,
+#       length=0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54KWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54KWT")], angle = 90,
+#       length = 0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54KWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54KWT")], angle = 90,
+#       length=0.1, lwd = 2)
 
 # Make x-axis labels
-mtext('E54Q', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+#mtext('E54K', side = 1, line = 1, at = 2, cex = 1)
+#mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
-plot(jitter(rep(2, length(enz.trnc$Absorbance)), amount = 0.1), enz.trnc$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
-box(lwd=2) 
-points(jitter(rep(4, length(enz.Trnc.wt$Absorbance)), amount = 0.1), enz.Trnc.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
+#plot(jitter(rep(2, length(enz.E54Q$Absorbance)), amount = 0.1), enz.E54Q$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+#box(lwd=2) 
+#points(jitter(rep(4, length(enz.E54Q.wt$Absorbance)), amount = 0.1), enz.E54Q.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(enz.trnc$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(enz.Trnc.wt$Absorbance), pch = 21, col = "black", 
-       bg = "NA", lwd = 2, cex = 2.5)
+#points(2, mean(enz.E54Q$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
+#points(4, mean(enz.E54Q.wt$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
 
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at=c(0, 25000, 50000, 75000), labels = F)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(2, 4), labels = F)
+#axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
+#axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at=c(0, 25000, 50000, 75000), labels = F)
+#axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
+#axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
+
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54Q")], y1 = enz.table$LCI[which(enz.table$Protein == "E54Q")], angle = 90,
+#       length = 0.1, lwd = 2)
+#arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "E54Q")], y1 = enz.table$UCI[which(enz.table$Protein == "E54Q")], angle = 90,
+#       length=0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54QWT")], y1 = enz.table$LCI[which(enz.table$Protein == "E54QWT")], angle = 90,
+#       length = 0.1, lwd = 2)
+#arrows(x0 = c(4), y0 = enz.table$mean[which(enz.table$Protein == "E54QWT")], y1 = enz.table$UCI[which(enz.table$Protein == "E54QWT")], angle = 90,
+#       length=0.1, lwd = 2)
+
+# Make x-axis labels
+#mtext('E54Q', side = 1, line = 1, at = 2, cex = 1)
+#mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+
+#plot(jitter(rep(2, length(enz.trnc$Absorbance)), amount = 0.1), enz.trnc$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+#box(lwd=2) 
+#points(jitter(rep(4, length(enz.Trnc.wt$Absorbance)), amount = 0.1), enz.Trnc.wt$Absorbance, pch = 21, bg = "darkgrey", col = "darkgrey", lwd = 2, cex = 1.7)
+
+#points(2, mean(enz.trnc$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
+#points(4, mean(enz.Trnc.wt$Absorbance), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)
+
+#axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     labels = c("0", "25000", "50000", "75000"), at = c(0, 25000, 50000, 75000))
+#axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at=c(0, 25000, 50000, 75000), labels = F)
+#axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
+#axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#     at = c(2, 4), labels = F)
 
 #arrows(x0 = c(2), y0 = enz.table$mean[which(enz.table$Protein == "Trnc")], y1 = enz.table$LCI[which(enz.table$Protein == "Trnc")], angle = 90,
 #       length = 0.1, lwd = 2)
@@ -786,19 +788,21 @@ axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 #       length=0.1, lwd = 2)
 
 # Make x-axis labels
-mtext('Trnc', side = 1, line = 1, at = 2, cex = 1)
-mtext('WT', side = 1, line = 1, at = 4, cex = 1)
+#mtext('Trnc', side = 1, line = 1, at = 2, cex = 1)
+#mtext('WT', side = 1, line = 1, at = 4, cex = 1)
 
 # Add outside Y axis 
-mtext(expression('Relative Final Fluorescence (Absorbance)'), side = 2,
-      outer = TRUE, cex = 1.5, line = -20 , adj = 0.5)
+#mtext(expression('Relative Final Fluorescence (Absorbance)'), side = 2,
+#      outer = TRUE, cex = 1.5, line = -20 , adj = 0.5)
 
 # Close Plot Device
 dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("figures/Fig4.png")
+#img <- readPNG("figures/Fig4.png")
+#grid.raster(img)
+img <- readPNG("figures/Fig4alt.png")
 grid.raster(img)
 ```
 
@@ -850,8 +854,9 @@ df.info <- rbind(df.info.1, df.info.2)
 df <- cbind(df, df.info) 
 
 # Remove outlier data points: Reps with some parameter exceeding 100% change
-df <- df[c(-5, -6, -7, -8, -32, -33, -34), ] # Remove Art1
+#df <- df[c(-5, -6, -7, -8, -32, -33, -34), ] # Remove Art1
 #df <- df[c(-6, -8), ]
+df <- df[c(-5, -6, -7, -8), ] # Only remove art1
 
 df.norm <- as.data.frame(scale(df[,1:3]))
 df.norm <- cbind(df.norm, df[, 4:7])
@@ -891,6 +896,24 @@ df.A.table$PD <- label
 df.A.table <- df.A.table[order(df.A.table$PD), ]
 
 
+# Generate umax table of means, sems, and CIs
+df.umax.means <- aggregate(umax ~ Genus, mean, data= df.norm)
+df.umax.sems <- aggregate(umax ~ Genus, sem, data = df.norm)
+df.umax.LL.95 <- aggregate(df.norm$umax ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[1])
+df.umax.UL.95 <- aggregate(df.norm$umax ~ Genus, df.norm,
+          FUN = function(x) t.test(x)$conf.int[2])
+df.umax.table <- data.frame(df.umax.means[1], df.umax.means[2], df.umax.sems[2],
+                       df.umax.LL.95[2], df.umax.UL.95[2])
+colnames(df.umax.table) <- c( "Genus",  "mean", "sem", "LCI", "UCI")
+
+# Order df.table
+label <- c(2,7,6,3,8,1,5,11,9,4,10)
+df.umax.table$PD <- label
+df.umax.table <- df.umax.table[order(df.umax.table$PD), ]
+
+
+
 # Subset data for figure 
 df.norm.Ped <- df.norm[ which(df.norm$Genus == "Pedobacter"), ]
 #df.norm.Art1 <- df.norm[ which(df.norm$Genus == "Arthrobacter1"), ]
@@ -904,16 +927,24 @@ df.norm.Var <- df.norm[ which(df.norm$Genus == "Variovorax"), ]
 df.norm.Mic <- df.norm[ which(df.norm$Genus == "Micrococcus"), ]
 df.norm.Cur <- df.norm[ which(df.norm$Genus == "Curtobacterium"), ]
 df.norm.Bac <- df.norm[ which(df.norm$Genus == "Bacillus"), ]
+
+
+# Generate figure 
+#png(filename="~/../GitHub/Rpf/figures/Fig6.png",  
+#    width = 1200, height = 1200, res = 96*2)
+#plot.new()
+#par(oma=c(3,5,0,0), mar=c(1,2,1,1), mfrow = c(2,1),  byrow = TRUE)
 ```
 
 
 ```{r}
-# Generate figure
-png(filename="~/../GitHub/Rpf/figures/Fig5.png",  
-    width = 1200, height = 1200, res = 96*2)
 
+
+# Generate Alt. 3x1 figure
+png(filename="~/../GitHub/Rpf/figures/Fig6Alt.png",  
+    width = 1200, height = 1200, res = 96*2)
 plot.new()
-par(oma=c(3,5,0,0), mar=c(1,2,1,1), mfrow = c(2,1),  byrow = TRUE)
+par(oma=c(3,5,0,0), mar=c(1,2,1,1), mfrow = c(3,1),  byrow = TRUE)
 
 # Lag time
 plot(jitter(rep(1, length(df.norm.Mic$L)), amount = 0.1), df.norm.Mic$L,
@@ -1060,8 +1091,7 @@ mtext(expression('Biomass Yield (A)'), side = 2,
 
 # Major Axes
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("Mic", "Art2", "Cur", "Rho", "Myc", "Bac", "Azo", "Jan", "Pse", "Var", "Ped"), 
-     at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
+     labels =  FALSE, at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
@@ -1082,12 +1112,99 @@ arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.A.table$mean, y1 = df.
 
 box(lwd = 2)
 
+
+# Maximum growth rate (umax)
+plot(jitter(rep(1, length(df.norm.Mic$umax)), amount = 0.1), df.norm.Mic$umax,
+     ylim = c(-3, 3.5), xlim = c(0.5, 11.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+           cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+#points(jitter(rep(2, length(df.norm.Art1$A)), amount = 0.1), df.norm.Art1$A, pch = 21, 
+#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(2, length(df.norm.Art2$umax)), amount = 0.1), df.norm.Art2$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(3, length(df.norm.Cur$umax)), amount = 0.1), df.norm.Cur$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(df.norm.Rho$umax)), amount = 0.1), df.norm.Rho$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(5, length(df.norm.Myc$umax)), amount = 0.1), df.norm.Myc$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(6, length(df.norm.Bac$umax)), amount = 0.1), df.norm.Bac$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Azo$umax)), amount = 0.1), df.norm.Azo$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Jan$umax)), amount = 0.1), df.norm.Jan$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(9, length(df.norm.Pse$umax)), amount = 0.1), df.norm.Pse$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(10, length(df.norm.Var$umax)), amount = 0.1), df.norm.Var$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(11, length(df.norm.Ped$umax)), amount = 0.1), df.norm.Ped$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+
+points(1, mean(df.norm.Mic$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+#points(2, mean(df.norm.Art1$umax), pch = 21, col = "black", 
+#       bg = "NA", lwd = 2, cex = 2.5)  
+points(2, mean(df.norm.Art2$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(3, mean(df.norm.Cur$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4, mean(df.norm.Rho$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(5, mean(df.norm.Myc$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(6, mean(df.norm.Bac$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Azo$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Jan$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(9, mean(df.norm.Pse$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(10, mean(df.norm.Var$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(11, mean(df.norm.Ped$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+# Y-axis label
+mtext(expression('Umax'), side = 2,
+      outer = FALSE, cex = 1.25, line = 3, adj = 0.5)
+
+# Major Axes
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("Mic", "Art2", "Cur", "Rho", "Myc", "Bac", "Azo", "Jan", "Pse", "Var", "Ped"), 
+     at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(-3, -2, -1, 0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2, 3,4,5,6,7,8,9,10,11), labels = F)
+
+# Add dotted line at zero
+abline(h=0, col="black", lty =2, lwd=2)
+
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.umax.table$mean, y1 = df.umax.table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.umax.table$mean, y1 = df.umax.table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+box(lwd = 2)
+
+
 # Close Plot Device
 dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("~/../GitHub/Rpf/figures/Fig5.png")
+#img <- readPNG("~/../GitHub/Rpf/figures/Fig6.png")
+#grid.raster(img)
+
+img <- readPNG("~/../GitHub/Rpf/figures/Fig6Alt.png")
 grid.raster(img)
 
 ```
@@ -1096,7 +1213,7 @@ grid.raster(img)
 
 
 ```{r}
-# B) Generate simple bargraph to look at the effects of Rpf on growth curve parameters
+# A) Generate simple bargraph to look at the effects of Rpf on growth curve parameters
 library(ggplot2)
 
 # Calculate mean and sem 
@@ -1163,9 +1280,13 @@ L.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1),
         axis.ticks.length = unit(.25, "cm"),
         axis.ticks = element_line(size = 2))
 
+```
 
 
-# B) Phylognetic analysis of generality assay results 
+# 7) Effect of phylogeny on response to Rpf 
+
+```{r}
+# A) Phylognetic analysis of generality assay results 
 # Load required packages 
 require('ape')
 require('seqinr')
@@ -1201,7 +1322,6 @@ colnames(sem) <- c("Genus", "A", "umax", "L")
 traits <- traits[ , c(1,2,5,8)]   # The trait values do not make sense. Contradiction in KBS0714 results
 colnames(traits) <- c("Genus", "A", "umax", "L")
 
-
 # Make Genus names as row names 
 row.names(traits) <- traits$Genus
 # Remove Genus name column
@@ -1216,7 +1336,7 @@ check.norm.sd <- apply(traits.norm, 2, sd, na.rm = TRUE)
 
 # Convert scaled list back to dataframe
 traits.norm.db <- data.frame(matrix(unlist(traits.norm), 
-              nrow=12, byrow = T), stringsAsFactors = FALSE)
+              nrow=11, byrow = T), stringsAsFactors = FALSE)
 rownames(traits.norm.db) <- rownames(traits)
 colnames(traits.norm.db) <- colnames(traits.norm)
 
@@ -1225,7 +1345,64 @@ traits.norm <- as.data.frame(traits.norm)
 traits.norm$Genus <- traits$Genus
 #traits.norm <- traits.norm[c(4,1,2,3)]
 
+###########
+# Read FASTA file as DNAStringSet 
+dna <- readDNAStringSet("KBSsequences.fasta")
+
+# Performing an Alignment using Muscle from Ape package 
+aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
+
+# Convert Alignment File to DNAbin Object 
+dna.bin <- as.DNAbin(aln)
+dna.bin.1 <- as.phyDat(aln)
+
+# Create Distance Matrix with "raw" Model {ape}
+seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
+
+# Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
+nj.tree <- bionj(seq.dist.raw)
+
+# Identify Outgroup Sequence
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Root the Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Plot the Rooted Tree{ape}
+par(mar = c(1,1,2,1) + 0.1)
+plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
+           direction = "right", cex = 1, label.offset = 1)
+add.scale.bar(cex = 0.7)
+
+# Generate Neighbor Joining Tree Using F84 DNA Substitution Model {ape}
+nj.tree <- bionj(seq.dist.F84)
+
+# Define the Outgroup
+outgroup <- match("Methanosarcina", nj.tree$tip.label)
+
+# Create a Rooted Tree {ape}
+nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+
+# Keep Rooted but Drop Outgroup Branch
+nj.rooted <- drop.tip(nj.rooted, "Methanosarcina")
+
+# Define Color Palette
+mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+
+# Normalized traits with na.omit
+traits.norm.na <- na.omit(traits.norm)
+
+# Map Growth curve parameter response to Rpf treatment {adephylo}
+par(mar=c(1,1,1,1) + 0.1)
+x <- phylo4d(nj.rooted, traits.norm.na)
+table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
+              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
+              edge.color = "black", edge.width = 2, box = FALSE,
+              col=mypalette(25), pch = 15, cex.symbol = 2.5,
+              ratio.tree = 0.75, cex.legend = 1, center = FALSE)
 ##################################################
+
+
 # Below part should not work becuase traits should be missing Art1 now
 
 # Generating Phylogenetic ML tree
@@ -1263,12 +1440,12 @@ summary(generality.umax.anova)
     # Significant effect of Treatment and strain interaction (p=0.00406)
 generality.L.anova <- aov(L ~ Treatment*Genus, data = gc)
 summary(generality.L.anova)
-    # Significant effect of Rpf treatment on L (p=0.0147)
+    # Significant effect of Rpf treatment on L (p=0.0085)
     # Highly significant effect of genus (p < 0.001)
-    # Non-significant effect of treatment and strain interaction (p=0.4019)
+    # Non-significant effect of treatment and strain interaction (p=0.318)
 generality.A.anova <- aov(A ~ Treatment*Genus, data = gc)
 summary(generality.A.anova)
-    # Significant effect of Rpf treatment (p < 0.001)
+    # Highly Significant effect of Rpf treatment (p < 0.001)
     # Highly significant effect of strain (p < 0.001)
     # Highly significant interaction effect of Rpf and strain (p < 0.001)
       # Reject null hypothesis --> Rpf differentially affected strains growth parameters
@@ -1283,9 +1460,9 @@ summary(generality.g.umax.anova)
     # Significant interaction effect of Rpf and gram (p=0.0486)
 generality.g.L.anova <- aov(L ~ Treatment*Gram, data = gc)
 summary(generality.g.L.anova)
-    # Non-significant main effect of Rpf treatment (p=0.55)
-    # Significant main effect of Gram status on Lag time (p=0.007)
-    # Non-significant interaction effect (0.66)
+    # Non-significant main effect of Rpf treatment (p=0.52)
+    # Significant main effect of Gram status on Lag time (p=0.0007)
+    # Non-significant interaction effect (0.64)
 generality.g.A.anova <- aov(A ~ Treatment*Gram, data = gc)
 summary(generality.g.A.anova)
     # Non-significant main effect of treatment 
