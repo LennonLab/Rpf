@@ -546,13 +546,13 @@ plot.new()
 par(oma=c(0,4,0,0), mar=c(3,4,2,1), mfrow=c(2,2))
 
 # Plot final biomass growth curve results
-plot(jitter(rep(2, length(od.E54A$OD600)), amount = 0.1), od.E54A$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(od.E54A.wt$OD600)), amount = 0.1), od.E54A.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
-points(jitter(rep(4, length(od.E54A.wt$OD600)), amount = 0.1), od.E54A.wt$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(od.E54A$OD600)), amount = 0.1), od.E54A$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(od.E54A$OD600), pch = 21, col = "black", 
+points(2, mean(od.E54A.wt$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(od.E54A.wt$OD600), pch = 21, col = "black", 
+points(4, mean(od.E54A$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -564,26 +564,26 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54A")], y1 = od.table$LCI[which(od.table$Treatment == "E54A")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54AWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54AWT")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54A")], y1 = od.table$UCI[which(od.table$Treatment == "E54A")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54AWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54AWT")], angle = 90,
        length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54AWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54AWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54A")], y1 = od.table$LCI[which(od.table$Treatment == "E54A")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54AWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54AWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54A")], y1 = od.table$UCI[which(od.table$Treatment == "E54A")], angle = 90,
        length=0.1, lwd = 2)
 
 # Make x-axis labels
-mtext('E54A', side = 1, line = 1.5, at = 2, cex = 1.5)
-mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('E54A', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 
-plot(jitter(rep(2, length(od.E54K$OD600)), amount = 0.1), od.E54K$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(od.E54K.wt$OD600)), amount = 0.1), od.E54K.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
-points(jitter(rep(4, length(od.E54K.wt$OD600)), amount = 0.1), od.E54K.wt$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(od.E54K$OD600)), amount = 0.1), od.E54K$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(od.E54K$OD600), pch = 21, col = "black", 
+points(2, mean(od.E54K.wt$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(od.E54K.wt$OD600), pch = 21, col = "black", 
+points(4, mean(od.E54K$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -595,25 +595,26 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54K")], y1 = od.table$LCI[which(od.table$Treatment == "E54K")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54KWT")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54K")], y1 = od.table$UCI[which(od.table$Treatment == "E54K")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54KWT")], angle = 90,
        length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54KWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54K")], y1 = od.table$LCI[which(od.table$Treatment == "E54K")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54KWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54KWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54K")], y1 = od.table$UCI[which(od.table$Treatment == "E54K")], angle = 90,
        length=0.1, lwd = 2)
+
 # Make x-axis labels
-mtext('E54K', side = 1, line = 1.5, at = 2, cex = 1.5)
-mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('E54K', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 
-plot(jitter(rep(2, length(od.E54Q$OD600)), amount = 0.1), od.E54Q$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(od.E54Q.wt$OD600)), amount = 0.1), od.E54Q.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
-points(jitter(rep(4, length(od.E54Q.wt$OD600)), amount = 0.1), od.E54Q.wt$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(od.E54Q$OD600)), amount = 0.1), od.E54Q$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(od.E54Q$OD600), pch = 21, col = "black", 
+points(2, mean(od.E54Q.wt$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(od.E54Q.wt$OD600), pch = 21, col = "black", 
+points(4, mean(od.E54Q$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -625,25 +626,26 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54Q")], y1 = od.table$LCI[which(od.table$Treatment == "E54Q")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54QWT")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54Q")], y1 = od.table$UCI[which(od.table$Treatment == "E54Q")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54QWT")], angle = 90,
        length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 = od.table$LCI[which(od.table$Treatment == "E54QWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54Q")], y1 = od.table$LCI[which(od.table$Treatment == "E54Q")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54QWT")], y1 = od.table$UCI[which(od.table$Treatment == "E54QWT")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54Q")], y1 = od.table$UCI[which(od.table$Treatment == "E54Q")], angle = 90,
        length=0.1, lwd = 2)
+
 # Make x-axis labels
-mtext('E54Q', side = 1, line = 1.5, at = 2, cex = 1.5)
-mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('E54Q', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 
-plot(jitter(rep(2, length(od.trnc$OD600)), amount = 0.1), od.trnc$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+plot(jitter(rep(2, length(od.Trnc.wt$OD600)), amount = 0.1), od.Trnc.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
-points(jitter(rep(4, length(od.Trnc.wt$OD600)), amount = 0.1), od.Trnc.wt$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4, length(od.trnc$OD600)), amount = 0.1), od.trnc$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
 
-points(2, mean(od.trnc$OD600), pch = 21, col = "black", 
+points(4, mean(od.trnc$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
-points(4, mean(od.Trnc.wt$OD600), pch = 21, col = "black", 
+points(2, mean(od.Trnc.wt$OD600), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -655,17 +657,18 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = c(2, 4), labels = F)
 
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "Trnc")], y1 = od.table$LCI[which(od.table$Treatment == "Trnc")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "Trnc")], y1 = od.table$LCI[which(od.table$Treatment == "Trnc")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "Trnc")], y1 = od.table$UCI[which(od.table$Treatment == "Trnc")], angle = 90,
+arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "Trnc")], y1 = od.table$UCI[which(od.table$Treatment == "Trnc")], angle = 90,
        length=0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 = od.table$LCI[which(od.table$Treatment == "TrncWT")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 = od.table$LCI[which(od.table$Treatment == "TrncWT")], angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 = od.table$UCI[which(od.table$Treatment == "TrncWT")], angle = 90,
+arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 = od.table$UCI[which(od.table$Treatment == "TrncWT")], angle = 90,
        length=0.1, lwd = 2)
+
 # Make x-axis labels
-mtext('Trnc', side = 1, line = 1.5, at = 2, cex = 1.5)
-mtext('WT', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('Trnc', side = 1, line = 1.5, at = 4, cex = 1.5)
+mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 # Add outside Y axis 
 mtext(expression('Biomass (OD600)'), side = 2,
       outer = TRUE, cex = 2, line = 1 , adj = 0.5)
