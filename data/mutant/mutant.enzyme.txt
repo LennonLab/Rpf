@@ -23,3 +23,15 @@ E54A	E54A	31947
 E54A	E54A	26505
 E54A	E54A	24414
 E54A	E54A	25292
+Trnc  TrncWT  24431
+Trnc  TrncWT  24956
+Trnc  TrncWT  26516
+Trnc  TrncWT  25880
+Trnc  Trnc  4319
+Trnc  Trnc  3960
+Trnc  Trnc  3908
+Trnc  Trnc  3927
+Trnc  TrncSub  2843
+Trnc  TrncSub  2474
+Trnc  TrncSub  2476
+Trnc  TrncSub  2535
