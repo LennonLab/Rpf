@@ -1,0 +1,4 @@
+align.seqs(fasta=KBSsequences.fasta, reference=silva.seed_v132.align, flip=T, processors=4)
+summary.seqs(fasta=KBSsequences.align)
+screen.seqs(fasta=KBSsequences.align, minlength=200)
+filter.seqs(fasta=KBSsequences.good.align, vertical=T, trump=.)
