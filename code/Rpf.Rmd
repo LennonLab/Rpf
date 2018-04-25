@@ -859,7 +859,11 @@ df <- cbind(df, df.info)
 # Remove outlier data points: Reps with some parameter exceeding 100% change
 #df <- df[c(-5, -6, -7, -8, -32, -33, -34), ] # Remove Art1
 #df <- df[c(-6, -8), ]
-df <- df[c(-5, -6, -7, -8), ] # Only remove art1
+
+#df <- df[c(-5, -6, -7, -8), ] # Only remove art1
+
+# Do not remove art 1
+df.norm <- df
 
 df.norm <- as.data.frame(scale(df[,1:3]))
 df.norm <- cbind(df.norm, df[, 4:7])
@@ -1339,7 +1343,7 @@ check.norm.sd <- apply(traits.norm, 2, sd, na.rm = TRUE)
 
 # Convert scaled list back to dataframe
 traits.norm.db <- data.frame(matrix(unlist(traits.norm), 
-              nrow=11, byrow = T), stringsAsFactors = FALSE)
+              nrow=12, byrow = T), stringsAsFactors = FALSE)
 rownames(traits.norm.db) <- rownames(traits)
 colnames(traits.norm.db) <- colnames(traits.norm)
 
@@ -1350,59 +1354,59 @@ traits.norm$Genus <- traits$Genus
 
 ###########
 # Read FASTA file as DNAStringSet 
-dna <- readDNAStringSet("KBSsequences.fasta")
+#dna <- readDNAStringSet("KBSsequences.fasta")
 
 # Performing an Alignment using Muscle from Ape package 
-aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
+#aln <- muscle::muscle(seqs="dna.fasta", stringset = dna, out = "dna.afa")
 
 # Convert Alignment File to DNAbin Object 
-dna.bin <- as.DNAbin(aln)
-dna.bin.1 <- as.phyDat(aln)
+#dna.bin <- as.DNAbin(aln)
+#dna.bin.1 <- as.phyDat(aln)
 
 # Create Distance Matrix with "raw" Model {ape}
-seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
+#seq.dist.raw <- dist.dna(dna.bin, model = "raw", pairwise.deletion = FALSE)
 
 # Neighbor Joining Algorithm to Construct Tree, a 'phylo' Object {ape}
-nj.tree <- bionj(seq.dist.raw)
+#nj.tree <- bionj(seq.dist.raw)
 
 # Identify Outgroup Sequence
-outgroup <- match("Methanosarcina", nj.tree$tip.label)
+#outgroup <- match("Methanosarcina", nj.tree$tip.label)
 
 # Root the Tree {ape}
-nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+#nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
 
 # Plot the Rooted Tree{ape}
-par(mar = c(1,1,2,1) + 0.1)
-plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
-           direction = "right", cex = 1, label.offset = 1)
-add.scale.bar(cex = 0.7)
+#par(mar = c(1,1,2,1) + 0.1)
+#plot.phylo(nj.rooted, main = "Neigbor Joining Tree", "phylogram", use.edge.length = FALSE,
+#           direction = "right", cex = 1, label.offset = 1)
+#add.scale.bar(cex = 0.7)
 
 # Generate Neighbor Joining Tree Using F84 DNA Substitution Model {ape}
-nj.tree <- bionj(seq.dist.F84)
+#nj.tree <- bionj(seq.dist.F84)
 
 # Define the Outgroup
-outgroup <- match("Methanosarcina", nj.tree$tip.label)
+#outgroup <- match("Prochlorococcus", nj.tree$tip.label)
 
 # Create a Rooted Tree {ape}
-nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
+#nj.rooted <- root(nj.tree, outgroup, resolve.root = TRUE)
 
 # Keep Rooted but Drop Outgroup Branch
-nj.rooted <- drop.tip(nj.rooted, "Methanosarcina")
+#nj.rooted <- drop.tip(nj.rooted, "Prochlorococcus")
 
 # Define Color Palette
-mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
+#mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
 
 # Normalized traits with na.omit
-traits.norm.na <- na.omit(traits.norm)
+#traits.norm.na <- na.omit(traits.norm)
 
 # Map Growth curve parameter response to Rpf treatment {adephylo}
-par(mar=c(1,1,1,1) + 0.1)
-x <- phylo4d(nj.rooted, traits.norm.na)
-table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
-              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
-              edge.color = "black", edge.width = 2, box = FALSE,
-              col=mypalette(25), pch = 15, cex.symbol = 2.5,
-              ratio.tree = 0.75, cex.legend = 1, center = FALSE)
+#par(mar=c(1,1,1,1) + 0.1)
+#x <- phylo4d(nj.rooted, traits.norm.na)
+#table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
+#              cex.label = 0.8, scale = TRUE, use.edge.length = FALSE,
+#              edge.color = "black", edge.width = 2, box = FALSE,
+#              col=mypalette(25), pch = 15, cex.symbol = 2.5,
+#              ratio.tree = 0.75, cex.legend = 1, center = FALSE)
 ##################################################
 
 
@@ -1413,13 +1417,13 @@ table.phylo4d(x, treetype = "phylo", symbol = "colors", show.node = TRUE,
 ml.tree <- read.tree("data/generality/phylo/RAxML_bipartitionsBranchLabels.KBS.ML")
 
 # Define the outgroup
-outgroup <- match("Methanosarcina", ml.tree$tip.label)
+outgroup <- match("Prochlorococcus", ml.tree$tip.label)
 
 # Create a rooted tree {ape}
 ml.rooted <- root(ml.tree, outgroup, resolve.root = TRUE)
 
 # Keep rooted but drop outgroup branch
-ml.rooted <- drop.tip(ml.rooted, "Methanosarcina")
+ml.rooted <- drop.tip(ml.rooted, "Prochlorococcus")
 
 # Define Color Palette
 mypalette <- colorRampPalette(brewer.pal(9, "YlOrRd"))
