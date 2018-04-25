@@ -447,8 +447,10 @@ grid.raster(img)
 od <- read.delim("data/mutant/mutant.growth.txt", sep="\t", header = TRUE)
 
 # Remove all LMM treatment data 
-toBeRemoved <- which(od$Treatment=="LMM")
-od<-od[-toBeRemoved,]
+#toBeRemoved <- which(od$Treatment=="LMM")
+#od<-od[-toBeRemoved,]
+
+#do not remove control
 
 # Subset biomass dataset by experiment
 od.E54A <- subset(od, Experiment=="E54A")
@@ -457,15 +459,15 @@ od.E54Q <- subset(od, Experiment=="E54Q")
 od.trnc <- subset(od, Experiment=="trnc")
 
 # T-tests statistics of mutation/ truncation on final OD600 
-od.E54A.t <- t.test(OD600~Treatment, data=od.E54A) 
-od.E54A.t # Significant effect of E54A mutation (p=0.001) --> E54A decreased final od
-od.E54K.t <- t.test(OD600~Treatment, data=od.E54K) 
-od.E54K.t # Significant effect of E54K mutation (p=0.0002) --> E54K decreased final od
-od.E54Q.t <- t.test(OD600~Treatment, data=od.E54Q) 
-od.E54Q.t # Significant effect of E54Q mutation (p=0.01) --> E54Q decreased final od
+#od.E54A.t <- t.test(OD600~Treatment, data=od.E54A) 
+#od.E54A.t # Significant effect of E54A mutation (p=0.001) --> E54A decreased final od
+#od.E54K.t <- t.test(OD600~Treatment, data=od.E54K) 
+#od.E54K.t # Significant effect of E54K mutation (p=0.0002) --> E54K decreased final od
+#od.E54Q.t <- t.test(OD600~Treatment, data=od.E54Q) 
+#od.E54Q.t # Significant effect of E54Q mutation (p=0.01) --> E54Q decreased final od
     # Reject null hypothesis --> Altering Rpf active site decreased resuscitative effects
-od.trnc.t <- t.test(OD600~Treatment, data=od.trnc) 
-od.trnc.t # Significant effect of truncation (p=0.002) --> Trnc decreased final od
+#od.trnc.t <- t.test(OD600~Treatment, data=od.trnc) 
+#od.trnc.t # Significant effect of truncation (p=0.002) --> Trnc decreased final od
     # Reject null hypothesis --> Removing Rpf repeating alaine and LysM domain decreased resuscitative effects
 
 # Calculate SEM and CI table for each protein and experiment in dataset
@@ -501,12 +503,12 @@ enz.E54Q <- subset(enz, Experiment == "E54Q")
 enz.trnc <- subset(enz, Experiment == "trnc")
 
 # Statistics on EnzCheck results
-enz.E54A.t <- t.test(Absorbance~Protein, data=enz.E54A) 
-enz.E54A.t # Non-significant effect (p=0.1107) 
-enz.E54K.t <- t.test(Absorbance~Protein, data=enz.E54K) 
-enz.E54K.t # Non-signficant effect (p=0.1937) 
-enz.E54Q.t <- t.test(Absorbance~Protein, data=enz.E54Q) 
-enz.E54Q.t # Marginally non-significant effect (p=0.05599) 
+#enz.E54A.t <- t.test(Absorbance~Protein, data=enz.E54A) 
+#enz.E54A.t # Non-significant effect (p=0.1107) 
+#enz.E54K.t <- t.test(Absorbance~Protein, data=enz.E54K) 
+#enz.E54K.t # Non-signficant effect (p=0.1937) 
+#enz.E54Q.t <- t.test(Absorbance~Protein, data=enz.E54Q) 
+#enz.E54Q.t # Marginally non-significant effect (p=0.05599) 
 #enz.trnc.t <- t.test(Absorbance~Protein, data=enz.trnc) # In the process of redoing this assay
 #enz.trnc.t
 
@@ -577,6 +579,11 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54A")], y1 = 
 mtext('E54A', side = 1, line = 1.5, at = 4, cex = 1.5)
 mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 
+# Add basline control biomass
+E54A.base = od.table$mean[ which(od.table$Treatment == "E54ALMM") ]
+abline(h = E54A.base ,color= 'Black',  lwd =2, lty = 2)
+
+
 plot(jitter(rep(2, length(od.E54K.wt$OD600)), amount = 0.1), od.E54K.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(od.E54K$OD600)), amount = 0.1), od.E54K$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
@@ -607,6 +614,11 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54K")], y1 = 
 # Make x-axis labels
 mtext('E54K', side = 1, line = 1.5, at = 4, cex = 1.5)
 mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
+
+# Add basline control biomass
+E54K.base = od.table$mean[ which(od.table$Treatment == "E54KLMM") ]
+abline(h = E54K.base ,color= 'Black', lwd =2,  lty = 2)
+
 
 plot(jitter(rep(2, length(od.E54Q.wt$OD600)), amount = 0.1), od.E54Q.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
@@ -639,6 +651,11 @@ arrows(x0 = c(4), y0 = od.table$mean[which(od.table$Treatment == "E54Q")], y1 = 
 mtext('E54Q', side = 1, line = 1.5, at = 4, cex = 1.5)
 mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
 
+# Add basline control biomass
+E54Q.base = od.table$mean[ which(od.table$Treatment == "E54QLMM") ]
+abline(h = E54Q.base ,color= 'Black', lwd =2,  lty = 2)
+
+
 plot(jitter(rep(2, length(od.Trnc.wt$OD600)), amount = 0.1), od.Trnc.wt$OD600, ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
 box(lwd=2) 
 points(jitter(rep(4, length(od.trnc$OD600)), amount = 0.1), od.trnc$OD600, pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
@@ -669,9 +686,14 @@ arrows(x0 = c(2), y0 = od.table$mean[which(od.table$Treatment == "TrncWT")], y1 
 # Make x-axis labels
 mtext('Trnc', side = 1, line = 1.5, at = 4, cex = 1.5)
 mtext('WT', side = 1, line = 1.5, at = 2, cex = 1.5)
+
+# Add basline control biomass
+trnc.base = od.table$mean[ which(od.table$Treatment == "TrncLMM") ]
+abline(h = trnc.base , color= 'Black', lwd =2, lty = 2)
+
 # Add outside Y axis 
 mtext(expression('Biomass (OD600)'), side = 2,
-      outer = TRUE, cex = 2, line = 1 , adj = 0.5)
+      outer = TRUE, cex = 2, line = 1, adj = 0.5)
 
 # Plot EnzCheck Assay results
 #plot(jitter(rep(2, length(enz.E54A$Absorbance)), amount = 0.1), enz.E54A$Absorbance, ylim = c(0, 100000), xlim = c(0.5, 5.5), pch = 21, col = "darkgrey", bg = "darkgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis= 1.5, las = 1, ylab = "", xlab = "")
