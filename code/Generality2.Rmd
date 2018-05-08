@@ -28,6 +28,7 @@ sem <- function(x) sqrt(var(x)/length(x))
 # Load gompertz output data 
 gc.param.1 <- read.delim("data/generality2/20180417_generality2_p1_gomp_output.txt", sep = ",", header = TRUE)
 gc.param.2 <- read.delim("data/generality2/20180419_generality2_p2_gomp_output.txt", sep = ",", header = TRUE)
+gc.param.3 <- read.delim("data/generality2/20180430_generality2_p3_gomp_output.txt", sep = ",", header = TRUE)
 
 # Load key for growth curve assay 
 gc.key <- read.delim("data/generality2/generality2_key.txt", sep = "\t", header = TRUE)
@@ -37,9 +38,11 @@ key.1 <- subset(gc.key, Run == "1", select = c(Strain,Gram,Phylum,Genus,Treatmen
 gc.param.1 <- cbind(gc.param.1,key.1)
 key.2 <- subset(gc.key, Run == "2", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
 gc.param.2 <- cbind(gc.param.2,key.2)
+key.3 <- subset(gc.key, Run == "3", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
+gc.param.3 <- cbind(gc.param.3,key.3)
 
 # Merge datasets
-gc <- rbind(gc.param.1,gc.param.2)
+gc <- rbind(gc.param.1,gc.param.2, gc.param.3)
 
 # Remove unused parameters to simplify
 gc <- gc[ ,c(-(1:2),-(6:10))]
@@ -66,7 +69,7 @@ generality.A.means.sem <- transform(generality.A.means.sem, lower=mean-sem, uppe
 
 generality.A.means.sem$Genus <- factor(generality.A.means.sem$Genus,
                                        levels = c("Micrococcus", "Arthrobacter2", "Curtobacterium", 
-                                                  "Mycobacterium", "Bacillus","Janthinobacterium"))
+                                                  "Mycobacterium", "Bacillus","Janthinobacterium", "Pedobacter", "Pseudomonas"))
 # Maximum growth rate (umax)
 generality.umax.means.sem <- ddply(gc, c("Genus", "Treatment"), summarise,
                    mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
@@ -74,14 +77,14 @@ generality.umax.means.sem <- transform(generality.umax.means.sem, lower=mean-sem
 
 generality.umax.means.sem$Genus <- factor(generality.umax.means.sem$Genus,
                                        levels = c("Micrococcus", "Arthrobacter2", "Curtobacterium", 
-                                                  "Mycobacterium", "Bacillus","Janthinobacterium"))
+                                                  "Mycobacterium", "Bacillus","Janthinobacterium", "Pedobacter", "Pseudomonas"))
 # Lag time (L)
 generality.L.means.sem <- ddply(gc, c("Genus","Treatment"), summarise,
                    mean=mean(L), sem=sd(L)/sqrt(length(L)))
 generality.L.means.sem <- transform(generality.L.means.sem, lower=mean-sem, upper=mean+sem)
 generality.L.means.sem$Genus <- factor(generality.L.means.sem$Genus,
                                        levels = c("Micrococcus", "Arthrobacter2", "Curtobacterium", 
-                                                  "Mycobacterium", "Bacillus","Janthinobacterium"))
+                                                  "Mycobacterium", "Bacillus","Janthinobacterium", "Pedobacter", "Pseudomonas"))
 
 # Bargraph figure 
 A.bar <- ggplot(data=generality.A.means.sem, aes(x=Genus, y=mean, fill=Treatment)) + 
@@ -185,7 +188,7 @@ df <- cbind(df, df.l)
 colnames(df) <- c("A", "umax", "L")
 
 # Add phylogenetic information to dataset
-df.info <- as.data.frame(gc[c(1:10, 21:32), 4:7])
+df.info <- as.data.frame(gc[c(1:10, 21:32, 45:52), 4:7])
 df <- cbind(df, df.info) 
 
 # Non-normalizing 
@@ -207,7 +210,7 @@ df.table <- data.frame(df.means[1], df.means[2], df.sems[2],
 colnames(df.table) <- c( "Genus",  "mean", "sem", "LCI", "UCI")
 
 # Order by PD
-label <- c(2,5,3,6,1,4)
+label <- c(2,5,3,6,1,4,8,7)
 df.table$PD <- label
 df.table <- df.table[order(df.table$PD), ]
 
@@ -243,13 +246,13 @@ df.umax.table$PD <- label
 df.umax.table <- df.umax.table[order(df.umax.table$PD), ]
 
 # Subset data for figure 
-#df.norm.Ped <- df.norm[ which(df.norm$Genus == "Pedobacter"), ]
+df.norm.Ped <- df.norm[ which(df.norm$Genus == "Pedobacter"), ]
 #df.norm.Art1 <- df.norm[ which(df.norm$Genus == "Arthrobacter1"), ]
 df.norm.Art2 <- df.norm[ which(df.norm$Genus == "Arthrobacter2"), ]
 df.norm.Myc <- df.norm[ which(df.norm$Genus == "Mycobacterium"), ]
 #df.norm.Azo <- df.norm[ which(df.norm$Genus == "Azospirillium"), ]
 #df.norm.Rho <- df.norm[ which(df.norm$Genus == "Rhodococcus"), ]
-#df.norm.Pse <- df.norm[ which(df.norm$Genus == "Pseudomonas"), ]
+df.norm.Pse <- df.norm[ which(df.norm$Genus == "Pseudomonas"), ]
 df.norm.Jan <- df.norm[ which(df.norm$Genus == "Janthinobacterium"), ]
 #df.norm.Var <- df.norm[ which(df.norm$Genus == "Variovorax"), ]
 df.norm.Mic <- df.norm[ which(df.norm$Genus == "Micrococcus"), ]
@@ -333,7 +336,7 @@ par(oma=c(3,5,0,0), mar=c(1,2,1,1), mfrow = c(3,1),  byrow = TRUE)
 
 # Lag time
 plot(jitter(rep(1, length(df.norm.Mic$L)), amount = 0.1), df.norm.Mic$L,
-     ylim = c(-3, 3), xlim = c(0.5, 6.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+     ylim = c(-3, 3), xlim = c(0.5, 8.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
            cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
       las = 1, ylab = "", xlab = "")
       box(lwd = 2)
@@ -353,12 +356,12 @@ points(jitter(rep(5, length(df.norm.Bac$L)), amount = 0.1), df.norm.Bac$L, pch =
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 points(jitter(rep(6, length(df.norm.Jan$L)), amount = 0.1), df.norm.Jan$L, pch = 21, 
        bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(9, length(df.norm.Pse$L)), amount = 0.1), df.norm.Pse$L, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Pse$L)), amount = 0.1), df.norm.Pse$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 #points(jitter(rep(10, length(df.norm.Var$L)), amount = 0.1), df.norm.Var$L, pch = 21, 
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(11, length(df.norm.Ped$L)), amount = 0.1), df.norm.Ped$L, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Ped$L)), amount = 0.1), df.norm.Ped$L, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 
 points(1, mean(df.norm.Mic$L), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
@@ -378,12 +381,12 @@ points(5, mean(df.norm.Bac$L), pch = 21, col = "black",
 #       bg = "NA", lwd = 2, cex = 2.5) 
 points(6, mean(df.norm.Jan$L), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
-#points(9, mean(df.norm.Pse$L), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Pse$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 #points(10, mean(df.norm.Var$L), pch = 21, col = "black", 
 #       bg = "NA", lwd = 2, cex = 2.5) 
-#points(1, mean(df.norm.Ped$L), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Ped$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 
 # Y-axis label
 mtext(expression('Lag Time (L)'), side = 2,
@@ -394,7 +397,7 @@ mtext(expression('Lag Time (L)'), side = 2,
 #     labels = F, at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = F, at = c(1, 2, 3,4,5,6), las =3)
+     labels = F, at = c(1, 2, 3,4,5,6,7,8), las =3)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
@@ -406,7 +409,7 @@ axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 #     at = c(1, 2, 3,4,5,6,7,8,9,10,11), labels = F)
 
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(1, 2, 3,4,5,6), labels = F)
+     at = c(1, 2, 3,4,5,6,7,8), labels = F)
 
 # Add dotted line at zero
 abline(h=0, col="black", lty =2, lwd=2)
@@ -416,9 +419,9 @@ abline(h=0, col="black", lty =2, lwd=2)
 #arrows(x0 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), y0 = df.table$mean, y1 = df.table$UCI, angle = 90,
 #       length=0.1, lwd = 2)
 
-arrows(x0 = c(1, 2, 3,4,5,6), y0 = df.table$mean, y1 = df.table$LCI, angle = 90,
+arrows(x0 = c(1, 2, 3,4,5,6,7,8), y0 = df.table$mean, y1 = df.table$LCI, angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(1, 2, 3,4,5,6), y0 = df.table$mean, y1 = df.table$UCI, angle = 90,
+arrows(x0 = c(1, 2, 3,4,5,6,7,8), y0 = df.table$mean, y1 = df.table$UCI, angle = 90,
        length=0.1, lwd = 2)
 
 box(lwd = 2)
@@ -426,7 +429,7 @@ box(lwd = 2)
 
 # Biomass Yield
 plot(jitter(rep(1, length(df.norm.Mic$A)), amount = 0.1), df.norm.Mic$A,
-     ylim = c(-3, 3), xlim = c(0.5, 6.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+     ylim = c(-3, 3), xlim = c(0.5, 8.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
            cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
       las = 1, ylab = "", xlab = "")
       box(lwd = 2)
@@ -446,12 +449,12 @@ points(jitter(rep(5, length(df.norm.Bac$A)), amount = 0.1), df.norm.Bac$A, pch =
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 points(jitter(rep(6, length(df.norm.Jan$A)), amount = 0.1), df.norm.Jan$A, pch = 21, 
        bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(9, length(df.norm.Pse$A)), amount = 0.1), df.norm.Pse$A, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Pse$A)), amount = 0.1), df.norm.Pse$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 #points(jitter(rep(10, length(df.norm.Var$A)), amount = 0.1), df.norm.Var$A, pch = 21, 
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(11, length(df.norm.Ped$A)), amount = 0.1), df.norm.Ped$A, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Ped$A)), amount = 0.1), df.norm.Ped$A, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 
 points(1, mean(df.norm.Mic$A), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
@@ -471,12 +474,12 @@ points(5, mean(df.norm.Bac$A), pch = 21, col = "black",
 #       bg = "NA", lwd = 2, cex = 2.5) 
 points(6, mean(df.norm.Jan$A), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
-#points(9, mean(df.norm.Pse$A), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Pse$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 #points(10, mean(df.norm.Var$A), pch = 21, col = "black", 
 #       bg = "NA", lwd = 2, cex = 2.5) 
-#points(11, mean(df.norm.Ped$A), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Ped$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 
 # Outer Y-axis label
 mtext(expression('Normalized % Change with Rpf Treatment'), side = 2,
@@ -490,7 +493,7 @@ mtext(expression('Biomass Yield (A)'), side = 2,
 #     labels =  FALSE, at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = F, at = c(1, 2, 3,4,5,6), las =3)
+     labels = F, at = c(1, 2, 3,4,5,6,7,8), las =3)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
@@ -502,14 +505,14 @@ axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 #     at = c(1, 2, 3,4,5,6,7,8,9,10,11), labels = F)
 
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(1, 2, 3, 4, 5, 6), labels = F)
+     at = c(1, 2, 3, 4, 5, 6,7,8), labels = F)
 
 # Add dotted line at zero
 abline(h=0, col="black", lty =2, lwd=2)
 
-arrows(x0 = c(1, 2, 3, 4, 5, 6), y0 = df.A.table$mean, y1 = df.A.table$LCI, angle = 90,
+arrows(x0 = c(1, 2, 3, 4, 5, 6,7,8), y0 = df.A.table$mean, y1 = df.A.table$LCI, angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(1, 2, 3, 4, 5, 6), y0 = df.A.table$mean, y1 = df.A.table$UCI, angle = 90,
+arrows(x0 = c(1, 2, 3, 4, 5, 6,7,8), y0 = df.A.table$mean, y1 = df.A.table$UCI, angle = 90,
        length=0.1, lwd = 2)
 
 box(lwd = 2)
@@ -517,7 +520,7 @@ box(lwd = 2)
 
 # Maximum growth rate (umax)
 plot(jitter(rep(1, length(df.norm.Mic$umax)), amount = 0.1), df.norm.Mic$umax,
-     ylim = c(-3, 3.5), xlim = c(0.5, 6.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
+     ylim = c(-3, 3.5), xlim = c(0.5, 8.5), pch = 21, col = "grey", bg = "grey", lwd = 2,
            cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
       las = 1, ylab = "", xlab = "")
       box(lwd = 2)
@@ -537,12 +540,12 @@ points(jitter(rep(5, length(df.norm.Bac$umax)), amount = 0.1), df.norm.Bac$umax,
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 points(jitter(rep(6, length(df.norm.Jan$umax)), amount = 0.1), df.norm.Jan$umax, pch = 21, 
        bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(9, length(df.norm.Pse$umax)), amount = 0.1), df.norm.Pse$umax, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(7, length(df.norm.Pse$umax)), amount = 0.1), df.norm.Pse$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 #points(jitter(rep(10, length(df.norm.Var$umax)), amount = 0.1), df.norm.Var$umax, pch = 21, 
 #       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
-#points(jitter(rep(11, length(df.norm.Ped$umax)), amount = 0.1), df.norm.Ped$umax, pch = 21, 
-#       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
+points(jitter(rep(8, length(df.norm.Ped$umax)), amount = 0.1), df.norm.Ped$umax, pch = 21, 
+       bg = "grey", col = "grey", lwd = 2, cex = 1.7)
 
 points(1, mean(df.norm.Mic$umax), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
@@ -562,12 +565,12 @@ points(5, mean(df.norm.Bac$umax), pch = 21, col = "black",
 #       bg = "NA", lwd = 2, cex = 2.5) 
 points(6, mean(df.norm.Jan$umax), pch = 21, col = "black", 
        bg = "NA", lwd = 2, cex = 2.5) 
-#points(9, mean(df.norm.Pse$umax), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(7, mean(df.norm.Pse$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 #points(10, mean(df.norm.Var$umax), pch = 21, col = "black", 
 #       bg = "NA", lwd = 2, cex = 2.5) 
-#points(11, mean(df.norm.Ped$umax), pch = 21, col = "black", 
-#       bg = "NA", lwd = 2, cex = 2.5) 
+points(8, mean(df.norm.Ped$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
 
 # Y-axis label
 mtext(expression('Umax'), side = 2,
@@ -579,8 +582,8 @@ mtext(expression('Umax'), side = 2,
 #     at = c(1, 2, 3,4,5,6,7,8,9,10,11), las =3)
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("Mic", "Art2", "Cur", "Myc", "Bac", "Jan"), 
-     at = c(1, 2, 3,4,5,6), las =3)
+     labels = c("Mic", "Art2", "Cur", "Myc", "Bac", "Jan", "Pse", "Ped"), 
+     at = c(1, 2, 3,4,5,6,7,8), las =3)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = c("-3.0", "-2.0", "-1.0", "0.0", "1.0", "2.0", "3.0"), at = c(-3, -2, -1, 0, 1, 2, 3))
@@ -589,14 +592,14 @@ axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = c(-3, -2, -1, 0, 1, 2, 3), labels = F)
 
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(1, 2, 3,4,5,6), labels = F)
+     at = c(1, 2, 3,4,5,6,7,8), labels = F)
 
 # Add dotted line at zero
 abline(h=0, col="black", lty =2, lwd=2)
 
-arrows(x0 = c(1, 2, 3 , 4, 5, 6), y0 = df.umax.table$mean, y1 = df.umax.table$LCI, angle = 90,
+arrows(x0 = c(1, 2, 3 , 4, 5, 6,7,8), y0 = df.umax.table$mean, y1 = df.umax.table$LCI, angle = 90,
        length = 0.1, lwd = 2)
-arrows(x0 = c(1, 2, 3, 4, 5, 6), y0 = df.umax.table$mean, y1 = df.umax.table$UCI, angle = 90,
+arrows(x0 = c(1, 2, 3, 4, 5, 6,7,8), y0 = df.umax.table$mean, y1 = df.umax.table$UCI, angle = 90,
        length=0.1, lwd = 2)
 
 box(lwd = 2)
