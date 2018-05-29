@@ -74,7 +74,7 @@ A.bar <- ggplot(data=generality.A.means.sem, aes(x=Treatment, y=mean)) +
 
 A.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
                           data=generality.A.means.sem, width = 0.35, size=1) +
-  labs(x =  "Rpf concentration, Log10" ,y="Biomass Yield") +
+  labs(x =  "Rpf concentration" ,y="Biomass Yield") +
   theme_classic() +
   theme(axis.text.y=element_text(colour="black", size = 12),
         axis.text.x=element_text(colour="black", size=12),
@@ -90,7 +90,7 @@ umax.bar <- ggplot(data=generality.umax.means.sem, aes(x=Treatment, y=mean)) +
 
 umax.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
                           data=generality.umax.means.sem, width = 0.35, size=1) +
-  labs(x =  "Rpf concentration, Log10" ,y="Maximum Growth Rate") +
+  labs(x =  "Rpf concentration" ,y="Maximum Growth Rate") +
   theme_classic() +
   theme(axis.text.y=element_text(colour="black", size = 12),
         axis.text.x=element_text(colour="black", size=12),
@@ -106,7 +106,7 @@ L.bar <- ggplot(data=generality.L.means.sem, aes(x=Treatment, y=mean)) +
 
 L.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
                           data=generality.L.means.sem, width = 0.35, size=1) +
-  labs(x =  "Rpf concentration, Log10" ,y="Lag Time") +
+  labs(x =  "Rpf concentration" ,y="Lag Time") +
   theme_classic() +
   theme(axis.text.y=element_text(colour="black", size = 12),
         axis.text.x=element_text(colour="black", size=12),
@@ -180,6 +180,14 @@ ggplot(generality.L.means.sem, aes(x=Treatment, y=mean)) +
           plot.margin = unit(c(1.5,2,1,2), "cm"))
 
 ```
+
+## Colony forming units
+
+```{r}
+
+
+```
+
 
 
 
