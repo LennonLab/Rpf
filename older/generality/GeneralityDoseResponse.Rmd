@@ -1,0 +1,235 @@
+---
+title: "GeneralityDoseResponse"
+author: "Venus Kuo"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Generality of Rpf on KBS bacterial isolates
+
+# Set up working environment
+
+```{r setup}
+rm(list=ls())
+getwd()
+#setwd("~/GitHub/Rpf")
+knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+
+sem <- function(x) sqrt(var(x)/length(x))
+```
+
+
+# Load data set
+
+```{r}
+# A) Generate % change in growth curve parameter with Rpf treatment among KBS0714 strains # 
+# Load gompertz output data 
+gc.param <- read.delim("data/generality-dose/Generality_doseResponse.txt", sep = ",", header = TRUE)
+
+# Load key for growth curve assay 
+key <- read.delim("data/generality-dose/generality_dose_key.txt", sep = ",", header = TRUE)
+
+# Label phylogenetic and treatment information in datasets 
+gc <- cbind(gc.param,key)
+
+# Remove unused parameters to simplify
+gc <- gc[ ,c(-(1:2),-(6:11))]
+
+# Some biomass yeild values are negative, force to be positive # 
+gc$A <- abs(gc$A)
+
+# Treatment as factor
+#gc$Treatment <- as.factor(gc$Treatment)
+
+```
+
+
+```{r}
+# A) Generate simple bargraph to look at the effects of Rpf on growth curve parameters
+library(ggplot2)
+library(plyr)
+# Calculate mean and sem 
+# Biomass yeild (A)
+generality.A.means.sem <- ddply(gc, c("Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+generality.A.means.sem <- transform(generality.A.means.sem, lower=mean-sem, upper=mean+sem)
+
+# Maximum growth rate (umax)
+generality.umax.means.sem <- ddply(gc, c("Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+generality.umax.means.sem <- transform(generality.umax.means.sem, lower=mean-sem, upper=mean+sem)
+
+
+# Lag time (L)
+generality.L.means.sem <- ddply(gc, c("Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+generality.L.means.sem <- transform(generality.L.means.sem, lower=mean-sem, upper=mean+sem)
+
+# Bargraph figure 
+A.bar <- ggplot(data=generality.A.means.sem, aes(x=Treatment, y=mean)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+A.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.A.means.sem, width = 0.35, size=1) +
+  labs(x =  "Rpf concentration" ,y="Biomass Yield") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+umax.bar <- ggplot(data=generality.umax.means.sem, aes(x=Treatment, y=mean)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+umax.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.umax.means.sem, width = 0.35, size=1) +
+  labs(x =  "Rpf concentration" ,y="Maximum Growth Rate") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+L.bar <- ggplot(data=generality.L.means.sem, aes(x=Treatment, y=mean)) + 
+  geom_bar(colour="black", position = position_dodge(), stat = "identity", size = 1)
+
+L.bar + geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(1), 
+                          data=generality.L.means.sem, width = 0.35, size=1) +
+  labs(x =  "Rpf concentration" ,y="Lag Time") +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size = 12),
+        axis.text.x=element_text(colour="black", size=12),
+        axis.title = element_text(size=18),
+        axis.title.y = element_text(colour="black",  margin = margin(0,10,0,10)),
+        axis.title.x = element_text(colour="black",margin=margin(15,10,0,10)),
+        panel.border = element_rect(linetype = "solid", colour = "black", size=3, fill=NA),
+        axis.ticks.length = unit(.25, "cm"),
+        axis.ticks = element_line(size = 2))
+
+```
+
+
+## Generating Line Graph to depict change in growth curve parameter with Rpf concentration
+
+```{r}
+# Load packages
+library(ggplot2)
+library(plyr)
+library(png)
+
+# Calculate mean and sem 
+# Biomass yeild (A)
+generality.A.means.sem <- ddply(gc, c("Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+generality.A.means.sem <- transform(generality.A.means.sem, lower=mean-sem, upper=mean+sem)
+
+# The errorbars overlapped, so use position_dodge to move them horizontally
+pd <- position_dodge(0)
+
+ggplot(generality.A.means.sem, aes(x=Treatment, y=mean)) + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0), 
+                data=generality.A.means.sem, width = 0.2, size=1) +
+  geom_line(size=1) + 
+  geom_point( position=pd, size=3) +
+  scale_shape_manual(values=c(16, 17)) +
+  xlab(expression(Rpf~concentration~log[10])) +
+  ylab('Biomass yield (OD600)') +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size=18),
+          axis.text.x=element_text(colour="black", size=20),
+          axis.title.y = element_text(size = 19, colour="black",  margin = margin(0,10,0,0)),
+          axis.title.x = element_text(size = 20,colour="black",margin=margin(15,10,0,10)),
+          panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA),
+          plot.margin = unit(c(1.5,2,1,2), "cm"))
+
+ggsave("figures/Figure8-GeneralityDoseResponse.png", width = 20, height = 15, units = "cm")
+
+
+# Lag time (L)
+generality.L.means.sem <- ddply(gc, c("Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+generality.L.means.sem <- transform(generality.L.means.sem, lower=mean-sem, upper=mean+sem)
+
+generality.L.means.sem <- generality.L.means.sem[-6,]
+
+ggplot(generality.L.means.sem, aes(x=Treatment, y=mean)) + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0), 
+                data=generality.L.means.sem, width = 0.2, size=1) +
+  geom_line(size=1) + 
+  geom_point( position=pd, size=3) +
+  scale_shape_manual(values=c(16, 17)) +
+  xlab(expression(Rpf~concentration~log[10])) +
+  ylab('Lag time') +
+  theme_classic() +
+  theme(axis.text.y=element_text(colour="black", size=18),
+          axis.text.x=element_text(colour="black", size=20),
+          axis.title.y = element_text(size = 19, colour="black",  margin = margin(0,10,0,0)),
+          axis.title.x = element_text(size = 20,colour="black",margin=margin(15,10,0,10)),
+          panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA),
+          plot.margin = unit(c(1.5,2,1,2), "cm"))
+
+```
+
+## Colony forming units
+
+```{r}
+require('ggplot2')
+require('plyr')
+
+# Load data set # 
+rel_bio <- read.delim("data/generality-dose/Generality_DoseResponse_KBS0714_pixel.txt", sep = ",", header = TRUE)
+
+# Log transform Rpf concentration # 
+rel_bio['Rpf_Conc_log10'] = log10((rel_bio$Rpf_Conc + 1))
+
+# Calculate Relative biomass on plates # 
+rel_bio['Rel_Biomass'] = rel_bio['Biomass_Pixel'] / rel_bio['Total_Pixel']
+rel_bio['Rel_Biomass'] = round(rel_bio['Rel_Biomass'], digits = 3)
+
+# Plot scatter plot of relationship # 
+plot(rel_bio$Rpf_Conc_log10, rel_bio$Rel_Biomass)
+
+# Plot line graph of Rpf vs Relative biomass 
+
+rel_bio.means.sem <- ddply(rel_bio, c("Rpf_Conc"), summarise,
+                   mean=mean(Rel_Biomass), sem=sd(Rel_Biomass)/sqrt(length(Rel_Biomass)))
+rel_bio.means.sem <- transform(rel_bio.means.sem, lower=mean-sem, upper=mean+sem)
+
+pd <- position_dodge(0)
+
+ggplot(rel_bio.means.sem, aes(x=Rpf_Conc, y=mean)) + 
+  geom_errorbar(aes(ymax=upper, ymin=lower), position=position_dodge(0), 
+                data=rel_bio.means.sem, width = 0.2, size=1) +
+    geom_line(position=pd, size=2) +
+    geom_point() +
+    xlab("Rpf Concentrations") +
+    ylab("Relative Biomass") +
+    theme_classic() +
+    theme(axis.text.y=element_text(colour="black", size=18),
+          axis.text.x=element_text(colour="black", size=20),
+          axis.title.y = element_text(size = 19, colour="black",  margin = margin(0,10,0,0)),
+          axis.title.x = element_text(size = 20,colour="black",margin=margin(15,10,0,10)),
+          panel.border = element_rect(linetype = "solid", colour = "black", size=2, fill=NA))
+
+ggplot(data=rel_bio, aes(x=Rpf_Conc_log10, y=Rel_Biomass, group=1)) +
+  geom_line()+
+  geom_point()
+```
+
+
+
+
+
+
+
