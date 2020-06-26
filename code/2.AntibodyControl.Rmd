@@ -1,0 +1,160 @@
+---
+title: "Rpf: Antibody Controls"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+getwd()
+#setwd("~/GitHub/Rpf")
+knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("grid")
+
+sem <- function(x) sqrt(var(x)/length(x))
+```
+
+## Confirmation of enzymatic mechanisms of resuscitation with antibody control
+
+Measured abundance (OD600) of dormant KBS0714 under different conditions after
+incubating at 25C and 200 rpm after 120 hrs:
+
+1) No recombinant Rpf added
+2) Plus recombiant Rpf (1.7 uM), but no antigen and no antibody
+3) Plus recombinant Rpf (1.7 uM) and antibody, but no antigen 
+4) Plus recombinant Rpf (1.7 uM), antibody, and antigen
+
+For treatment 3, we added antibody taken at time zero before antigens developed
+For treatment 4, we added antibody taken 28 days following injection 
+
+## Load data and make a table
+
+```{r}
+antibody <- read.table("data/antibody/antibody.txt", header = TRUE, sep="\t")
+
+rpf.mean <- aggregate(antibody$OD600 ~ Treatment, mean, data = antibody)
+rpf.sem <- aggregate(antibody$OD600 ~ Treatment, sem, data = antibody)
+LL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[1])
+UL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
+          FUN = function(x) t.test(x)$conf.int[2])
+table <- data.frame(rpf.mean[1], rpf.mean[2], rpf.sem[2],
+          LL.95[2], UL.95[2])
+colnames(table) <- c("Treatment", "mean", "sem", "LCI", "UCI")
+```
+
+## Run an analysis of varaince (ANOVA)
+
+```{r}
+antibody.anova <- aov(OD600 ~ Treatment, data = antibody)
+summary(antibody.anova)
+TukeyHSD(antibody.anova)
+  # no difference between -Rpf and +Rpf,+anti.28 --> P = 0.1166317
+  # no difference between +Rpf and +Rpf,+anti.0 --> P = 0.9877646
+  # for all other comparisions, P < 0.0001
+```
+
+## Make figure
+
+```{r}
+# Subset data
+no.rpf <- antibody[ which(antibody$Treatment == "Rpf-"),]
+plus.rpf <- antibody[ which(antibody$Treatment == "Rpf+"),]
+plus.rpf.anti.0 <- antibody[ which(antibody$Treatment == "Rpf+, Anti0+"),]
+plus.rpf.anti.28 <- antibody[ which(antibody$Treatment == "Rpf+, Anti28+"),]
+
+# Create plot
+png(filename="~/GitHub/Rpf/figures/Fig2.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+# Add individuals points
+antibody.point <- plot(jitter(rep(1, length(no.rpf$OD600)), amount = 0.1), no.rpf$OD600, 
+      ylim = c(-0.2, 3.5), xlim = c(0.5, 5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
+      cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
+      las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+      
+points(jitter(rep(2.5, length(plus.rpf$OD600)), amount = 0.1), plus.rpf$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(3.5, length(plus.rpf.anti.0$OD600)), amount = 0.1), plus.rpf.anti.0$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+points(jitter(rep(4.5, length(plus.rpf.anti.28$OD600)), amount = 0.1), plus.rpf.anti.28$OD600, pch = 21, 
+       bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+
+# Add means
+points(1, mean(no.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(2.5, mean(plus.rpf$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)  
+points(3.5, mean(plus.rpf.anti.0$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+points(4.5, mean(plus.rpf.anti.28$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5) 
+
+# Add error bars
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$LCI, angle = 90,
+       length = 0.1, lwd = 2)
+arrows(x0 = c(1, 2.5, 3.5, 4.5), y0 = table$mean, y1 = table$UCI, angle = 90,
+       length=0.1, lwd = 2)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1, 2.5, 3.5, 4.5), labels = F)
+
+# Add y-axis label
+mtext(expression('Biomass (OD600)'), side = 2,
+      outer = FALSE, cex = 1.5, line = 3.6, adj = 0.5)
+
+# Add x-axis labels
+mtext('-Rpf', side = 1, line = 4, at = 1, cex = 1.5)
+mtext('+Rpf', side = 1, line = 4, at = 3.5, cex = 1.5)
+
+mtext('none', side = 1, line = 1.75, at = 2.5, cex = 0.8, col ='gray40')
+#mtext('-', side = 1, line = 2.25, at = 2.5, cex = 2)
+mtext('pre-bleed', side = 1, line = 1.75, at = 3.5, cex = 0.8, col ='gray40')
+#mtext('+', side = 1, line = 0.75, at = 3.5, cex = 2)
+#mtext('-', side = 1, line = 2.25, at = 3.5, cex = 2)
+mtext('post-bleed', side = 1, line = 1.75, at = 4.5, cex = 0.8, col ='gray40')
+#mtext('+', side = 1, line = 0.75, at = 4.5, cex = 2)
+#mtext('+', side = 1, line = 2.25, at = 4.5, cex = 2)
+
+
+mtext(expression(~italic('Antibody treatment')), side = 1, line = 0.7, 
+      at = 3.5, cex = 0.85, col ='gray40')
+#mtext('Antigen', side = 1, line = 2.25, at = 5.7, cex = 1.5)
+
+segments(0.7, -1, 1.5, -1, col = "black", lwd = 2, xpd = TRUE)
+segments(2.25, -1, 4.9, -1, col = "black", lwd = 2, xpd = TRUE)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("./figures/Fig2.png")
+
+grid.raster(img)
+```

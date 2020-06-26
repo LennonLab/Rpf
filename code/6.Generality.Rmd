@@ -1,0 +1,317 @@
+---
+title: "Rpf: generality"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf")
+#knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("psych")
+require("seqinr")
+require("ape")
+require("phylobase")
+require("RColorBrewer")
+require("phytools")
+require("geiger")
+require("picante")
+
+source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
+```
+
+## Load and process growth data
+
+```{r}
+# Load parameters from Gompertz analysis of growth curves
+gc.param.1 <- read.delim("data/generality/20160320_generality_gomp_param_output.txt", sep = ",", header = TRUE)
+gc.param.2 <- read.delim("data/generality/20160323_generality_gomp_param_output.txt", sep = ",", header = TRUE)
+
+# Load key associated with growth curve experiment 
+gc.key <- read.delim("data/generality/generality.gc.well.key.txt", sep = "\t", header = TRUE)
+
+# Merge data and key for data sets
+key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
+gc.param.1 <- cbind(gc.param.1,key.1)
+key.2 <- subset(gc.key, Run_Num == "2", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
+gc.param.2 <- cbind(gc.param.2,key.2)
+
+# Merge data sets
+gc <- rbind(gc.param.1, gc.param.2)
+
+# Remove unused parameters to simplify
+gc <- gc[ ,c(-(1:2),-(6:10))]
+
+# Yield parameter (A) sometimes reported as negative; take absolute value
+gc$A <- abs(gc$A)
+
+# Time recorded in minutes; report lag and umax in hours
+gc$L <-gc$L/60
+gc$umax <-gc$umax/60
+
+# Round up small negative estimates of lag for KBS0702 to zero
+gc[6,3] = 0
+gc[8,3] = 0
+```
+
+## Perform two-way ANVOA to test for effect of Rpf on strains
+
+```{r}
+# Convert Treatment and Strain from integer or character to factors
+gc$Strain <- as.factor(gc$Strain)
+gc$Treatment <- as.factor(gc$Treatment)
+gc$Rep <- as.factor(gc$Rep)
+Rpf <- ifelse(gc$Treatment == "Rpf+", "plus", "minus")
+gc <- data.frame(gc, Rpf)
+gc$Rpf <- as.factor(gc$Rpf)
+
+# Two-way ANOVA on yield
+rpf.aov.A <- aov(A ~ Treatment + Strain + Treatment*Strain, data = gc)
+
+#                  Df Sum Sq Mean Sq F value   Pr(>F)    
+# Treatment         1  0.324  0.3243  41.008 1.36e-08 ***
+# Strain           11 12.997  1.1815 149.396  < 2e-16 ***
+# Treatment:Strain 11  0.502  0.0456   5.767 1.34e-06 ***
+# Residuals        72  0.569  0.0079                     
+
+# Two-way ANOVA on umax
+rpf.aov.umax <- aov(umax ~ Treatment + Strain + Treatment*Strain, data = gc)
+
+#                  Df    Sum Sq   Mean Sq F value  Pr(>F)    
+# Treatment         1 5.400e-11 5.350e-11   1.681 0.19888    
+# Strain           11 1.274e-08 1.158e-09  36.394 < 2e-16 ***
+# Treatment:Strain 11 9.880e-10 8.980e-11   2.822 0.00406 ** 
+# Residuals        72 2.291e-09 3.180e-11  
+
+# Two-way ANOVA on L
+rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
+
+#                  Df    Sum Sq   Mean Sq F value  Pr(>F)  
+# Treatment         1     32    31.6   7.305 0.00857 ** 
+# Strain           11   7766   706.0 163.430 < 2e-16 ***
+# Treatment:Strain 11     56     5.1   1.169 0.32354    
+# Residuals        72    311     4.3     
+```
+
+## Calculate effect sizes for growth parameters 
+
+```{r}
+# Calculate means across strains for +Rpf Treatment 
+gc.rpf.plus.strains <- filter(gc, Treatment == "Rpf+") %>%
+   select(A, umax, L, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.A = mean(A), mean.umax = mean(umax), mean.L = mean(L)) 
+
+# Calculate means across strains for -Rpf Treatment 
+gc.rpf.minus.strains <- filter(gc, Treatment == "Rpf-") %>%
+   select(A, umax, L, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.A = mean(A), mean.umax =mean(umax), mean.L = mean(L))
+
+# Calculate pooled standard deviation across strains 
+gc.rpf.pool.sd <- select(gc, A, umax, L, Strain) %>%
+   group_by(Strain) %>%
+   summarize(sd.A = sd(A), sd.umax = sd(umax), sd.L = sd(L)) 
+
+# Calculate effect size with Cohen's D
+cohen.d <- (gc.rpf.plus.strains[,2:4] - gc.rpf.minus.strains[,2:4]) / gc.rpf.pool.sd[,2:4]
+colnames(cohen.d) <- c("A", "umax", "L")
+rownames(cohen.d) <- t(as.data.frame(gc.rpf.minus.strains[1]))
+```
+
+## Phylogenetic analyses
+
+# Make alignment
+Using muscle (muscle3.8.31_i86darwin64.tar.gz), I aligned 16S sequenes using following command:
+
+```{bash, results = 'hide', eval = FALSE}
+muscle -in ./data/phylogeny/Rpf.16S.tree.fasta-out ./data/phylogeny/Rpf.16S.tree.af
+```
+
+# View alignment
+
+```{r}
+# Read Alignment File {seqinr}
+read.aln <- read.alignment(file = "./data/phylogeny/Rpf.16S.tree.afa", format = "fasta")  
+
+# Convert Alignment File to DNAbin Object {ape}
+rpf.DNAbin <- as.DNAbin(read.aln) 
+
+# Identify Base Pair Region of 16S rRNA Gene to Visuzlize
+window <- rpf.DNAbin[, 100:500] 
+
+# Command to Visusalize Sequence Alignment {ape}
+image.DNAbin(window, cex.lab = 0.50) 
+```
+
+# View maximum likelihood tree
+
+```{r}
+# Read Alignment File {seqinr}
+
+ml.tree.full <- read.tree("./data/phylogeny/RAxML_bipartitions.rpf.ml")
+
+# Rotate internal node so Gram-positive strains are together
+ml.tree <- rotate(ml.tree.full, node = 15)
+
+par(mar = c(1,1,2,1) + 0.1)
+plot.phylo(ml.tree, type = "phylogram", direction = "right", show.tip.label=TRUE,
+           use.edge.length = FALSE, cex = 0.6, label.offset = 1, 
+           main = "Maximum Likelihood with Support Values")
+add.scale.bar(cex = 0.7)
+nodelabels(ml.tree$node.label, font = 2, bg = "white", frame = "r", cex = 0.5)
+```
+
+# Map traits onto tree
+
+```{r}
+# Keep rooted but drop outgroup branch
+tree <- drop.tip(ml.tree.full, "Methanosarcina")
+tree$edge.length <- tree$edge.length + 10^-7
+
+# Reorder growth parameters to match tips
+gc.map <- as.matrix(cohen.d[match(tree$tip.label, row.names(cohen.d)), ])
+
+# Subset tree
+tree <- keep.tip(tree, row.names(cohen.d))
+tree$node.label <- c(1:tree$Nnode)
+
+# Define Color Palette
+BuRd <- c("#0571B0","#92C5DE","white", "#F7F7F7","#F4A582","#CA0020")
+mypalette <- colorRampPalette(BuRd)
+
+# Make figure
+png(filename="~/GitHub/Rpf/figures/Fig6.png",
+    width = 1200, height = 1200, res = 96*2, bg = "white")
+
+par(mar=c(0.5,0.5,0.5,1.5) + 0.1)
+
+# Rotate node (node number changes after removing outgroup)
+
+tree.2 <- rotate(tree, node = 13)
+
+x <- phylo4d(tree.2, tip.data = cohen.d[])
+
+table.phylo4d.j(x, treetype = "phylo", symbol = "colors", show.node = FALSE, 
+              cex.label = 0.65, grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
+              edge.color = "black", edge.width = 2, box = FALSE, 
+              col = mypalette(25), pch = 15, cex.symbol = 2, font = 2,
+              ratio.tree = 0.75, cex.legend = 1.25, center = FALSE)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("./figures/Fig6.png")
+
+grid.raster(img)
+```
+
+
+## Phylogenetic tests
+
+```{r}
+
+# Load tree
+ml.tree <- read.tree("./data/phylogeny/RAxML_bipartitions.rpf.ml")
+
+# Root tree and drop extra tip
+tree.rooted <- ape::root.phylo(ml.tree, outgroup = "Methanosarcina")
+tree <- ape::drop.tip(tree.rooted, 
+                       tip = c(setdiff(tree.rooted$tip.label, 
+                       row.names(cohen.d))))
+
+# Reorder to match tip labels
+cohen.d <- as.matrix(cohen.d[match(tree$tip.label, row.names(cohen.d)), ])
+
+# Blomberg's K
+
+## Yield (A)
+phylosignal(cohen.d[, 1], tree)
+Kcalc(cohen.d[, 1], tree)
+
+# K = 0.24 consistent with overdispersion of Rpf effect
+# But P = 0.629, so not significant
+
+## Maximum growth rate (umax)
+phylosignal(traits[, 2], tree)
+Kcalc(cohen.d[, 2], tree)
+
+# K = 0.24 consistent with overdispersion of Rpf effect
+# But P = 0.546, so not significant
+
+## Lag time (L)
+phylosignal(cohen.d[, 3], tree)
+Kcalc(cohen.d[, 3], tree)
+
+# K = 0.51 consistent with overdispersion of Rpf effect
+# But P = 0.115, so not significant
+
+
+# Pagel's Lambda
+
+# when lambda = 0, there's no signal (polytomy)
+# when lambda = 1, consistent with Brownian motion
+
+## Yield (A)
+phylosig(tree, cohen.d[, 1], method = "lambda", test = T)
+# lambda = 6.6107e-05, P value = 1
+
+# Maximum growth rate (umax)
+phylosig(tree, cohen.d[, 2], method = "lambda", test = T)
+# lambda = 0.51, P value = 0.429
+
+# Lag time (L)
+phylosig(tree, traits[, 3], method = "lambda", test = T)
+# lambda = 0.268, P value = 0.613
+
+
+# Does Rpf related to relatedness of KBS0714, the recombinant Rpf host strain?
+
+# Create sequence-based distance matrix {ape}
+seq.dist.raw <- dist.dna(rpf.DNAbin , model = "raw", pairwise.deletion = FALSE)
+seq.dist.mat <- as.matrix(dist(seq.dist.raw))
+
+# Retrieve the KBS0714 distances, drop outgroup, convert to similarity
+seq.dist.KBS0714 <- seq.dist.mat[,7]
+seq.dist.KBS0714 <- seq.dist.KBS0714[2:13]
+seq.sim.KBS0714 <- 1- seq.dist.KBS0714
+
+# Make dataframe and order
+seq.sim.KBS0714 <- data.frame(names(seq.sim.KBS0714), seq.sim.KBS0714)
+colnames(seq.sim.KBS0714) <- c("Strain", "Similarity")
+seq.sim.KBS0714 <- seq.sim.KBS0714[order(seq.sim.KBS0714$Strain),]
+
+# Merge similarity with effect sizes
+cohen.d <-as.data.frame(cohen.d)
+cohen.d <- cohen.d[order(row.names(cohen.d)), ]
+seq.sim.final <- data.frame(cohen.d, seq.sim.KBS0714)
+
+seq.sim.A <- lm(seq.dist.final$A ~ seq.sim.final$Similarity, data = seq.sim.final)
+# P = 0.1701 
+
+seq.sim.umax <- lm(seq.dist.final$umax ~ seq.sim.final$Similarity, data = seq.sim.final)
+# P = 0.0805 (but unequal variance)
+
+seq.sim.L <- lm(seq.dist.final$L ~ seq.sim.final$Similarity, data = seq.sim.final)
+spearman.test(seq.dist.final$L, seq.sim.final$Similarity)
+# P = 0.294 
+```

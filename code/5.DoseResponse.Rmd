@@ -1,0 +1,124 @@
+---
+title: "Rpf: dose-response"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+getwd()
+knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("plyr")
+require("bbmle")
+```
+
+## Load and process growth data
+
+Impregnated agar plates with a range of Rpf concentrations and measured areal 
+coverage as proxy for growth. 
+
+```{r}
+# Load data
+dose.raw <- read.table("data/dose.response/dose.response.txt", header = TRUE, sep="\t")
+
+# Calculate area of plate with bacteria
+area <- dose.raw$Pixels / (pi * dose.raw$Plate.Width * dose.raw$Plate.Height)
+dose.raw <- data.frame(dose.raw, area)
+
+# Sselect 48 or 96 hrs
+biomass <- dose.raw[which(dose.raw$Hrs == 48),]
+
+# Calculate total biomass across plates
+sum.area <- sum(biomass$area)
+
+# Calculate relative biomass on each plate with different Rpf concentrations
+rel.biomass <- biomass$area/sum.area
+dose <- data.frame(biomass, rel.biomass)
+```
+
+## Fit growth to Rpf using asymetric Laplace with maxium likelihood
+
+```{r}
+A = 0.40 # Maximum biomass (0.4)
+X = 40 # Optimum Rpf (45)
+K = 0.9 # Kappa; <1 right side decays slowly; >1 left side decays slowly (0.5)
+L = -0.04 # Lamdba; peakiness (-0.5); larger = flatter
+Z = 0.02 # Error (10)
+
+fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)* 
+            k ^sign(x - Rpf)), sd = z), start = list(a = A, x = X, k = K, l = L, z = Z), 
+            data = dose)
+
+#  Coefficients:
+#     Estimate Std. Error  z value     Pr(z)    
+# a  0.4183468  0.0216615  19.3129 < 2.2e-16 ***
+# x 39.0661777         NA       NA        NA    
+# k  0.9030598  0.0441071  20.4742 < 2.2e-16 ***
+# l -0.0406811  0.0038855 -10.4701 < 2.2e-16 ***
+# z  0.0225393  0.0064276   3.5067 0.0004538 ***
+
+# -2 log L: -28.50004 
+```
+
+# Plot data and function
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/Fig5.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(dose[,2], dose[,8], xlim = c(-25, 185), 
+     ylim = c(-0.025, 0.45), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 0.1, 0.2, 0.3, 0.4), at = c(0, 0.1, 0.2, 0.3, 0.4))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 0.1, 0.2, 0.3, 0.4))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 50, 100, 150), at = c(0, 50, 100, 150))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 50, 100, 150))
+
+mtext('Rpf (nM)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+
+mtext(expression(paste('Relative biomass')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.6)
+
+# Plot function
+curve(coef(fit)[[1]] * exp(-(x-coef(fit)[[2]]) * coef(fit)[[4]] * sign(coef(fit)[[2]] - x) * 
+      coef(fit)[[3]]^sign(coef(fit)[[2]]-x)),from = 0, to = 160, add = TRUE, lty = 2, lwd = 2.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("./figures/Fig5.png")
+grid.raster(img)
+```
