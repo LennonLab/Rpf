@@ -115,18 +115,18 @@ rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
 ```{r}
 # Calculate means across strains for +Rpf Treatment 
 gc.rpf.plus.strains <- filter(gc, Treatment == "Rpf+") %>%
-   select(A, umax, L, Strain) %>%
+   dplyr::select(A, umax, L, Strain) %>%
    group_by(Strain) %>%
    summarize(mean.A = mean(A), mean.umax = mean(umax), mean.L = mean(L)) 
 
 # Calculate means across strains for -Rpf Treatment 
 gc.rpf.minus.strains <- filter(gc, Treatment == "Rpf-") %>%
-   select(A, umax, L, Strain) %>%
+   dplyr::select(A, umax, L, Strain) %>%
    group_by(Strain) %>%
    summarize(mean.A = mean(A), mean.umax =mean(umax), mean.L = mean(L))
 
 # Calculate pooled standard deviation across strains 
-gc.rpf.pool.sd <- select(gc, A, umax, L, Strain) %>%
+gc.rpf.pool.sd <- dplyr::select(gc, A, umax, L, Strain) %>%
    group_by(Strain) %>%
    summarize(sd.A = sd(A), sd.umax = sd(umax), sd.L = sd(L)) 
 
@@ -169,7 +169,7 @@ image.DNAbin(window, cex.lab = 0.50)
 ml.tree.full <- read.tree("./data/phylogeny/RAxML_bipartitions.rpf.ml")
 
 # Rotate internal node so Gram-positive strains are together
-ml.tree <- rotate(ml.tree.full, node = 15)
+ml.tree <- ape::rotate(ml.tree.full, node = 15)
 
 par(mar = c(1,1,2,1) + 0.1)
 plot.phylo(ml.tree, type = "phylogram", direction = "right", show.tip.label=TRUE,
@@ -205,15 +205,16 @@ par(mar=c(0.5,0.5,0.5,1.5) + 0.1)
 
 # Rotate node (node number changes after removing outgroup)
 
-tree.2 <- rotate(tree, node = 13)
+tree.2 <- ape::rotate(tree, node = 13)
 
 x <- phylo4d(tree.2, tip.data = cohen.d[])
 
-table.phylo4d.j(x, treetype = "phylo", symbol = "colors", show.node = FALSE, 
-              cex.label = 0.65, grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
-              edge.color = "black", edge.width = 2, box = FALSE, 
-              col = mypalette(25), pch = 15, cex.symbol = 2, font = 2,
-              ratio.tree = 0.75, cex.legend = 1.25, center = FALSE)
+table.phylo4d.j(x, treetype = "phylo", rotate.node = 13,
+                symbol = "colors", show.node = FALSE, cex.label = 0.65, 
+                grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
+                edge.color = "black", edge.width = 2, box = FALSE, 
+                col = mypalette(25), pch = 15, cex.symbol = 2, font = 2,
+                ratio.tree = 0.75, cex.legend = 1.25, center = FALSE)
 
 # Close Plot Device
 dev.off()
