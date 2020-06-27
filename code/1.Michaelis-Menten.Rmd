@@ -61,8 +61,8 @@ png(filename="~/GitHub/Rpf/figures/Fig1.png",
 plot.new()
 par(mar = c(7, 7, 5, 7))
 
-plot(enz[,1], enz[,2], xlim = c(-0.05, 0.3), 
-     ylim = c(-5000, 90000), type = "p", 
+plot(enz[,1], enz[,2], xlim = c(-0.07, 0.37), 
+     ylim = c(-5000, 95000), type = "p", 
      pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
      cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
 box(lwd=2)
@@ -86,7 +86,19 @@ mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5,
 mtext('Relative fluorescence', side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.6)
 
 # Plot function
-curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.25, add = TRUE, lty = 2, lwd = 2.5)
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.33, add = TRUE, lty = 2, lwd = 2.5)
+
+# Plot constants
+abline(h = 8.4997e+04, col="darkgrey", lwd = 2, lty = 3)
+segments(-0.085, 8.4997e+04/2, 0.015, 8.4997e+04/2, col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+segments(0.015, -8400, 0.015, 8.4997e+04/2, col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+
+# Add text for constants
+text(-0.05, 8.9e+04, labels = expression(~italic('V'[max])), cex = 1)
+#text(-0.04, 4.5e+04, labels = expression(~italic('1/2 V'[max])), cex = 1)
+text(-0.065, 4.8e+04,, labels = expression(frac("1", "2")), cex= 0.65)
+text(-0.035, 4.8e+04, labels = expression(~italic('V'[max])), cex = 1)
+text(0.04, -4800, labels = expression(~italic('K'[m])), cex = 1)     
 
 # Close Plot Device
 dev.off()
