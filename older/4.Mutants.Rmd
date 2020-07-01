@@ -1,0 +1,384 @@
+---
+title: "Rpf: Mutants"
+author: "Jay T. Lennon and Venus Kuo"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+getwd()
+knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("plyr")
+
+sem <- function(x) sqrt(var(x)/length(x))
+LL.95 <- function(x) t.test(x)$conf.int[1]
+UL.95 <- function(x) t.test(x)$conf.int[2]
+```
+
+## Load growth data
+
+Monitoring dormant KBS0714 populations with different mutations exposed to Rpf.
+Mutations included substitution of conserved glutamic acid (E) catalytic site
+with other amino acids, namely alanine (A), lysine (K), and gluatimne (Q). 
+In addition, we truncated a repeating alanine residue in lectin-like regions, 
+which may be involved in Rpf attachment to cell membrane. 
+
+```{r}
+mut <- read.delim("data/mutant/mutant.growth.txt", sep="\t", header = TRUE)
+```
+
+## Calculate summary statistics
+
+```{r}
+mut.mean <- mut %>% group_by(Experiment, Treatment) %>%
+ dplyr::summarize(Mean = mean(OD600, na.rm=TRUE))
+
+mut.sem <- mut %>% group_by(Experiment, Treatment) %>%
+ dplyr::summarize(SEM = sem(OD600))
+
+mut.LL.95 <- mut %>% group_by(Experiment, Treatment) %>%
+  dplyr::summarize(LL.95 = LL.95(OD600))
+  
+mut.UL.95 <- mut %>% group_by(Experiment, Treatment) %>%
+  dplyr::summarize(UL.95 = UL.95(OD600))
+
+mut.table <- data.frame(mut.mean[1], mut.mean[2], mut.mean[3], mut.sem[3],
+           mut.LL.95[3], mut.UL.95[3])
+
+colnames(mut.table) <- c("Experiment", "Treatment", "mean", "sem", "LCI", "UCI")
+```
+
+# Subset data 
+```{r}
+mut.E54A.wt <- mut[ which(mut$Experiment == "E54A" & mut$Treatment == "wt"), ]
+mut.E54A <- mut[ which(mut$Experiment == "E54A" & mut$Treatment == "mut"), ]
+
+mut.E54K.wt <- mut[ which(mut$Experiment == "E54K" & mut$Treatment == "wt"), ]
+mut.E54K <- mut[ which(mut$Experiment == "E54K" & mut$Treatment == "mut"), ]
+
+mut.E54Q.wt <- mut[ which(mut$Experiment == "E54Q" & mut$Treatment == "wt"), ]
+mut.E54Q <- mut[ which(mut$Experiment == "E54Q" & mut$Treatment == "mut"), ]
+
+mut.trnc.wt <- mut[ which(mut$Experiment == "trnc" & mut$Treatment == "wt"), ]
+mut.trnc <- mut[ which(mut$Experiment == "trnc" & mut$Treatment == "mut"), ]
+```
+
+# Statistical test
+
+```{r}
+# Mutating glutamic acid (E) at position 54 to alanine (A)
+mut.E54A.t.test <- mut[ which(mut$Experiment == "E54A" & mut$Treatment != "control"), ]
+t.test.E54A <- t.test(OD600~Treatment, data=mut.E54A.t.test) 
+# one-sided t-test: t = -11.576, df = 3.1908, p-value = 0.0005159
+# Reduction of biomass = 3.6 fold or 72 % 
+
+# Mutating glutamic acid (E) at position 54 to lysine (K)
+mut.E54K.t.test <- mut[ which(mut$Experiment == "E54K" & mut$Treatment != "control"), ]
+t.test.E54K <- t.test(OD600~Treatment, data=mut.E54K.t.test) 
+# one-sided t-test: t = -9.5292, df = 4.8305, p-value = 0.0002593
+# Reduction of biomass = 1.6 fold or 39 % 
+
+# Mutating glutamic acid (E) at position 54 to glutamine (Q)
+mut.E54Q.t.test <- mut[ which(mut$Experiment == "E54Q" & mut$Treatment != "control"), ]
+t.test.E54Q <- t.test(OD600~Treatment, data=mut.E54Q.t.test) 
+# one-sided t-test: t = -5.3561, df = 3.0467, p-value = 0.01224
+# Reduction of biomass = 1.3 fold or 25 % 
+
+# Truncating variable linker and LysM Domain (Trnc)
+mut.trnc.t.test <- mut[ which(mut$Experiment == "trnc" & mut$Treatment != "control"), ]
+t.test.trnc  <- t.test(OD600~Treatment, data=mut.trnc.t.test) 
+# one-sided t-test: t = -6.4483, df = 4.29, p-value = 0.002332
+# Reduction of biomass = 2.1 fold or 53 % 
+```
+
+# Make figure
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/Fig4.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+plot.new()
+par(oma=c(2,4,0,0), mar=c(3,4,4,1), mfrow=c(2,2))
+
+# Panel A: E54A
+
+# Add points
+plot(jitter(rep(1.5, length(mut.E54A.wt$OD600)), amount = 0.1), mut.E54A.wt$OD600, 
+     ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = "lightgrey", 
+     bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+
+box(lwd=2) 
+
+points(jitter(rep(4.5, length(mut.E54A$OD600)), amount = 0.1), mut.E54A$OD600, 
+       pch = 21, bg = 'lightgrey', col = 'lightgrey', lwd = 2, cex = 1.7)
+
+# Add means
+points(1.5, mean(mut.E54A.wt$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+points(4.5, mean(mut.E54A$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+
+# Add error bars
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54A" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54A" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54A" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54A" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54A" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54A" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54A" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54A" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+# Add x-axis labels
+mtext('wild', side = 1, line = 1.5, at = 1.5, cex = 1.5)
+mtext('type', side = 1, line = 3.0, at = 1.5, cex = 1.5)
+mtext('mutant', side = 1, line = 1.5, at = 4.5, cex = 1.5)
+mtext('(E54A)', side = 1, line = 3.0, at = 4.5, cex = 1.5)
+
+# Add line corresponding to -Rpf control
+E54A.control = mut.table$mean[ which(mut.table$Experiment == "E54A" 
+      & mut.table$Treatment == "control") ]
+abline(h = E54A.control, col = 'black',  lwd = 2, lty = 2)
+text(1, 1.1, labels = expression(~italic("No Rpf")), col = "darkgrey", cex = 1)
+
+# Add panel name and P-value
+mtext(expression(~italic("P")~"= 0.0005"), line = -1.5, cex = 1, at = 1.5)
+text(5.25, 3.3, labels = "A", cex = 2)
+
+
+# Panel B: E54K
+
+# Add points
+plot(jitter(rep(1.5, length(mut.E54K.wt$OD600)), amount = 0.1), mut.E54K.wt$OD600, 
+     ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = 'lightgrey', 
+     bg = 'lightgrey', lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+
+box(lwd=2) 
+
+points(jitter(rep(4.5, length(mut.E54K$OD600)), amount = 0.1), mut.E54K$OD600, 
+       pch = 21, bg = 'lightgrey', col = 'lightgrey', lwd = 2, cex = 1.7)
+
+# Add means
+points(1.5, mean(mut.E54K.wt$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+points(4.5, mean(mut.E54K$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add axes
+# axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#      labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+
+# Add error bars
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54K" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54K" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54K" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54K" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54K" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54K" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54K" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54K" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+# Add x-axis labels
+mtext('wild', side = 1, line = 1.5, at = 1.5, cex = 1.5)
+mtext('type', side = 1, line = 3.0, at = 1.5, cex = 1.5)
+mtext('mutant', side = 1, line = 1.5, at = 4.5, cex = 1.5)
+mtext('(E54K)', side = 1, line = 3.0, at = 4.5, cex = 1.5)
+
+# Add line corresponding to -Rpf control
+E54K.control = mut.table$mean[ which(mut.table$Experiment == "E54K" 
+      & mut.table$Treatment == "control") ]
+abline(h = E54K.control, col = 'black',  lwd = 2, lty = 2)
+text(1, 0.9, labels = expression(~italic("No Rpf")), col = "darkgrey", cex = 1)
+
+# Add panel name and P-value
+mtext(expression(~italic("P")~"= 0.0003"), line = -1.5, cex = 1, at = 1.5)
+text(5.25, 3.3, labels = "B", cex = 2)
+
+
+# Panel C: E54K
+
+# Add points
+plot(jitter(rep(1.5, length(mut.E54Q.wt$OD600)), amount = 0.1), mut.E54Q.wt$OD600, 
+     ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = 'lightgrey', 
+     bg = 'lightgrey', lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+
+box(lwd=2) 
+
+points(jitter(rep(4.5, length(mut.E54Q$OD600)), amount = 0.1), mut.E54Q$OD600, 
+       pch = 21, bg = "lightgrey", col = "lightgrey", lwd = 2, cex = 1.7)
+
+# Add means
+points(1.5, mean(mut.E54Q.wt$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+points(4.5, mean(mut.E54Q$OD600), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+
+# Add error bars
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54Q" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54Q" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54Q" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54Q" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54Q" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "E54Q" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "E54Q" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "E54Q" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+# Add x-axis labels
+mtext('wild', side = 1, line = 1.5, at = 1.5, cex = 1.5)
+mtext('type', side = 1, line = 3.0, at = 1.5, cex = 1.5)
+mtext('mutant', side = 1, line = 1.5, at = 4.5, cex = 1.5)
+mtext('(E54Q)', side = 1, line = 3.0, at = 4.5, cex = 1.5)
+
+# Add line corresponding to -Rpf control
+E54Q.control = mut.table$mean[ which(mut.table$Experiment == "E54Q" 
+      & mut.table$Treatment == "control") ]
+abline(h = E54K.control, col = 'black',  lwd = 2, lty = 2)
+text(1, 0.9, labels = expression(~italic("No Rpf")), col = "darkgrey", cex = 1)
+#legend(0.5, 1.5, expression(italic("No Rpf")), box.col = "white", bg = "white", adj = 0.2)
+
+# Add panel name and P-value
+mtext(expression(~italic("P")~"= 0.012"), line = -1.5, cex = 1, at = 1.5)
+text(5.25, 3.3, labels = "C", cex = 2)
+
+# Panel D: truncated
+
+# Add points
+plot(jitter(rep(1.5, length(mut.trnc.wt$OD600)), amount = 0.1), mut.trnc.wt$OD600, 
+     ylim = c(-0.2, 3.5), xlim = c(0.5, 5.5), pch = 21, col = 'lightgrey', 
+     bg = 'lightgrey', lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+
+box(lwd=2) 
+
+points(jitter(rep(4.5, length(mut.trnc$OD600)), amount = 0.1), mut.trnc$OD600, 
+       pch = 21, bg = 'lightgrey', col = 'lightgrey', lwd = 2, cex = 1.7)
+
+# Add means
+points(1.5, mean(mut.trnc.wt$OD600), pch = 21, col = 'black', 
+       bg = "NA", lwd = 2, cex = 2.5)
+points(4.5, mean(mut.trnc$OD600), pch = 21, col = 'black', 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add axes
+# axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+#      labels = c("0.0", "1.0", "2.0", "3.0"), at = c(0, 1, 2, 3))
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 1, 2, 3), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1.5, 4.5), labels = F)
+
+# Add error bars
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "trnc" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "trnc" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(1.5), y0 = mut.table$mean[which(mut.table$Experiment == "trnc" & 
+      mut.table$Treatment == "wt")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "trnc" & mut.table$Treatment == "wt" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "trnc" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$LCI[which(mut.table$Experiment 
+      == "trnc" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+arrows(x0 = c(4.5), y0 = mut.table$mean[which(mut.table$Experiment == "trnc" & 
+      mut.table$Treatment == "mut")], y1 = mut.table$UCI[which(mut.table$Experiment 
+      == "trnc" & mut.table$Treatment == "mut" )], angle = 90, length = 0.1, lwd = 2)
+
+# Add x-axis labels
+mtext('wild', side = 1, line = 1.5, at = 1.5, cex = 1.5)
+mtext('type', side = 1, line = 3.0, at = 1.5, cex = 1.5)
+mtext('mutant', side = 1, line = 1.5, at = 4.5, cex = 1.5)
+mtext('(Trnc)', side = 1, line = 3.0, at = 4.5, cex = 1.5)
+
+# Add line corresponding to -Rpf control
+trnc.control = mut.table$mean[ which(mut.table$Experiment == "trnc" 
+      & mut.table$Treatment == "control") ]
+abline(h = trnc.control, col = 'black',  lwd = 2, lty = 2)
+text(1, 0.25, labels = expression(~italic("No Rpf")), col = "darkgrey", cex = 1)
+
+# Add panel name and P-value
+mtext(expression(~italic("P")~"= 0.002"), line = -1.5, cex = 1, at = 1.5)
+text(5.25, 2, labels = "D", cex = 2)
+
+# Add outside Y axis 
+mtext(expression('Biomass (OD600)'), side = 2,
+      outer = TRUE, cex = 2, line = 1, adj = 0.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+img <- readPNG("./figures/Fig4.png")
+grid.raster(img)
+```
