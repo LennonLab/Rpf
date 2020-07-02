@@ -15,8 +15,7 @@ Termination of dormancy in soil bacteria with resuscitation promoting factor (Rp
 ```{r setup}
 rm(list=ls())
 getwd()
-#setwd("~/GitHub/Rpf")
-knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+setwd("~/GitHub/Rpf")
 ```
 
 ## Load packages and functions
@@ -25,21 +24,22 @@ knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf')
 require("png")
 require("bbmle")
 require("grid")
-
-sem <- function(x) sqrt(var(x)/length(x))
 ```
 
 ## Enzymatic activity of recombinant Rpf
 
 ```{r}
 enz <- read.table("data/enzyme.activity/michaelis-menten.txt", sep="\t", header=TRUE)
+enz$sub <- enz$sub*100 # convertpeptidoglycan to ug/L
+rate <- enz$abs/24/60 # convert to minutes
+enz <- data.frame(enz,rate)
 
 # Starting values for fitting Michaelis-Menten with maximum likelihood
-V = 85000 
-K = 0.025 
-Z = 100
+V = 59 #85000
+K = 2.5 #0.025
+Z = 100 #100
 
-fit <- mle2(enz$abs ~ dnorm(mean = v * enz$sub / (k + enz$sub), sd = z), 
+fit <- mle2(enz$rate ~ dnorm(mean = v * enz$sub / (k + enz$sub), sd = z), 
     start = list(v = V, k = K, z = Z), data = enz)
 
 # Coefficients:
@@ -47,7 +47,15 @@ fit <- mle2(enz$abs ~ dnorm(mean = v * enz$sub / (k + enz$sub), sd = z),
    # k = Km, half saturation constant
    # -2 log L = deviance
 
-#     Estimate Std. Error    z value     Pr(z)    
+#     Estimate Std. Error   z    Pr(z)    
+#  Estimate Std. Error z value  Pr(z)
+# v  59.0672    93.1750  0.6339 0.5261
+# k   1.7632    10.6580  0.1654 0.8686
+# z  91.7555         NA      NA     NA
+
+# -2 log L: 87.018 
+
+
 # v 8.4997e+04 4.0273e-10 2.1105e+14 < 2.2e-16 ***
 # k 1.6581e-02 6.9277e-04 2.3935e+01 < 2.2e-16 ***
 # z 1.5742e+03 7.4041e-11 2.1261e+13 < 2.2e-16 ***
@@ -61,44 +69,52 @@ png(filename="~/GitHub/Rpf/figures/Fig1.png",
 plot.new()
 par(mar = c(7, 7, 5, 7))
 
-plot(enz[,1], enz[,2], xlim = c(-0.07, 0.37), 
-     ylim = c(-5000, 95000), type = "p", 
+# Add points
+plot(enz$sub, enz$rate, xlim = c(-5, 35), 
+     ylim = c(-5, 65), type = "p", 
      pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
      cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
 box(lwd=2)
 
 # Add ticks and tick labels
 axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
-   labels = c(0, 20000, 40000, 60000, 80000), at = c(0, 20000, 40000, 60000, 80000))
+   labels = c(0, 20, 40, 60), at = c(0, 20, 40, 60))
 
 axis(side = 4, labels = F, lwd.ticks = 2, 
-   at = c(0, 20000, 40000, 60000, 80000))
+   at = c(0, 20, 40, 60))
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
-    labels = c(0, 0.10, 0.2, 0.3), at = c(0, 0.10, 0.2, 0.3))
+    labels = c(0, 10, 20, 30), at = c(0, 10, 20, 30))
 
 axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
-   at = c(0, 0.10, 0.2, 0.3))
+   at = c(0, 10, 20, 30))
 
-mtext('Peptidoglycan (mg)', side = 1, outer = TRUE, cex = 1.5, 
+# Add axis labels
+mtext(expression(paste('Peptidoglycan (', mu, 'g/mL)')), side = 1, outer = TRUE, cex = 1.5, 
       line = -4, adj = 0.5)
 
-mtext('Relative fluorescence', side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.6)
+mtext("Murimidase activity", side = 2, outer = TRUE, cex = 1.5, line = -3, adj = 0.55)
 
+mtext(expression(paste('(fluorescence min '^-1*')')), side = 2, outer = TRUE, cex = 1, 
+      line = -4.5, adj = 0.55)      
+      
 # Plot function
-curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, to = 0.33, add = TRUE, lty = 2, lwd = 2.5)
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0, 
+      to = 30, add = TRUE, lty = 2, lwd = 2.5)
 
 # Plot constants
-abline(h = 8.4997e+04, col="darkgrey", lwd = 2, lty = 3)
-segments(-0.085, 8.4997e+04/2, 0.015, 8.4997e+04/2, col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
-segments(0.015, -8400, 0.015, 8.4997e+04/2, col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+abline(h = coef(fit)[[1]], col="darkgrey", lwd = 2, lty = 3)
+segments(-6, coef(fit)[[1]]/2, 1.4, coef(fit)[[1]]/2, 
+         col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+
+segments(coef(fit)[[2]], -8, coef(fit)[[2]], coef(fit)[[1]]/2, 
+         col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
 
 # Add text for constants
-text(-0.05, 8.9e+04, labels = expression(~italic('V'[max])), cex = 1)
-#text(-0.04, 4.5e+04, labels = expression(~italic('1/2 V'[max])), cex = 1)
-text(-0.065, 4.8e+04,, labels = expression(frac("1", "2")), cex= 0.65)
-text(-0.035, 4.8e+04, labels = expression(~italic('V'[max])), cex = 1)
-text(0.04, -4800, labels = expression(~italic('K'[m])), cex = 1)     
+text(-3.5, 62, labels = expression(~italic('V'[max])), cex = 1)
+text(-5, 34, labels = expression(frac("1", "2")), cex= 0.65)
+text(-2.4, 34, labels = expression(~italic('V'[max])), cex = 1)
+text(4, -3, labels = expression(~italic('K'[m])), cex = 1)     
 
 # Close Plot Device
 dev.off()
