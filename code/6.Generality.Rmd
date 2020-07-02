@@ -34,6 +34,7 @@ require("geiger")
 require("picante")
 require("lme4")
 require("lmerTest")
+requite("adephylo")
 
 source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
 ```
@@ -219,6 +220,8 @@ gc.map <- as.matrix(cohen.d[match(tree$tip.label, row.names(cohen.d)), ])
 # Subset tree
 tree <- keep.tip(tree, row.names(cohen.d))
 tree$node.label <- c(1:tree$Nnode)
+tree$node.label <- c(13:23)
+
 
 # Define color palette
 BuRd <- c("#0571B0","#92C5DE","gray92", "#F7F7F7","#F4A582","#CA0020")
@@ -231,15 +234,15 @@ png(filename="~/GitHub/Rpf/figures/Fig6.png",
 par(mar=c(0.5,0.5,0.5,1.5) + 0.1)
 
 # Rotate node (node number changes after removing outgroup)
+tree.2 <- ape::rotate(tree, node = 13)
+tree.3 <- reroot(tree.2, node.number = 14)
+dat.2 <- cohen.d[c(tree.3$tip.label), ]
 
-#tree.2 <- ape::rotate(tree, node = 13)
+#x <- phylo4d(tree.2, tip.data = cohen.d[])
+x <- phylo4d(tree.3, tip.data = dat.2)
 
-## maybe rotate should come earlier? Or naming should come after?
-
-x <- phylo4d(tree, tip.data = cohen.d[])
-
-table.phylo4d.j(x, treetype = "phylo", rotate.node = 13,
-                symbol = "colors", show.node = FALSE, cex.label = 0.65, 
+table.phylo4d(x, treetype = "phylo",
+                symbol = "colors", show.node = F, cex.label = 0.65, 
                 grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
                 edge.color = "black", edge.width = 2, box = FALSE, 
                 col = mypalette(25), pch = 15, cex.symbol = 2, font = 2,
