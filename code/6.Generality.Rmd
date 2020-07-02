@@ -32,6 +32,8 @@ require("RColorBrewer")
 require("phytools")
 require("geiger")
 require("picante")
+require("lme4")
+require("lmerTest")
 
 source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
 ```
@@ -77,6 +79,7 @@ gc[8,3] = 0
 gc$Strain <- as.factor(gc$Strain)
 gc$Treatment <- as.factor(gc$Treatment)
 gc$Rep <- as.factor(gc$Rep)
+gc$Gram <- as.factor(gc$Gram)
 Rpf <- ifelse(gc$Treatment == "Rpf+", "plus", "minus")
 gc <- data.frame(gc, Rpf)
 gc$Rpf <- as.factor(gc$Rpf)
@@ -107,6 +110,31 @@ rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
 # Strain           11   7766   706.0 163.430 < 2e-16 ***
 # Treatment:Strain 11     56     5.1   1.169 0.32354    
 # Residuals        72    311     4.3     
+```
+
+## Test for Gram + vs. Gram - Rpf effect
+
+```{r}
+# https://www.flutterbys.com.au/stats/tut/tut9.2a.html
+# random intercept for Strains (i.e., 1|Strain)
+# REML (residual maximum likelihood): helps account for unbalanced design
+
+gram.A <- lmer(A ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
+gram.A <- update(gram.A) # calls lmerTest package
+anova(gram.A) # calculates p-values using Satterthwaite method for denominator df 
+# no effect of Gram (P >0.05)
+
+gram.umax <- lmer(umax ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
+gram.umax <- update(gram.umax)
+anova(gram.umax)
+# significant effect of Gram (P = 0.025)
+# significant effect of Gram*Treatment (P = 0.01)
+
+
+gram.L <- lmer(L ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
+gram.L <- update(gram.L)
+anova(gram.L)
+# significant effect of Gram*Treatment (P = 0.05)
 ```
 
 ## Calculate effect sizes for growth parameters 
