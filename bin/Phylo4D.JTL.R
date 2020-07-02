@@ -134,7 +134,7 @@ table.phylo4d.j <- function (x, treetype = c("phylogram", "cladogram"),
   }
   tre <- suppressWarnings(as(x, "phylo"))
   if(exists("rotate.node")){
-    tre <- ape::rotate(tre, node = rotate.node)
+    tre <- ape::rotate(tree, node = rotate.node)
   }
   if (ncol(tdata(x, type = "tip")) == 0) {
     plot(tre, type = treetype, direction = "rightwards", 
