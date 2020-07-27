@@ -34,8 +34,7 @@ require("geiger")
 require("picante")
 require("lme4")
 require("lmerTest")
-requite("adephylo")
-
+require("adephylo")
 source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
 ```
 
@@ -73,7 +72,7 @@ gc[6,3] = 0
 gc[8,3] = 0
 ```
 
-## Perform two-way ANVOA to test for effect of Rpf on strains
+## Perform two-way ANVOA to test for effect of Rpf among strains
 
 ```{r}
 # Convert Treatment and Strain from integer or character to factors
@@ -113,7 +112,7 @@ rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
 # Residuals        72    311     4.3     
 ```
 
-## Test for Gram + vs. Gram - Rpf effect
+## Test for Gram + vs. Gram - Rpf effect with generalized linear mixed model (GlMM)
 
 ```{r}
 # https://www.flutterbys.com.au/stats/tut/tut9.2a.html
@@ -123,7 +122,7 @@ rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
 gram.A <- lmer(A ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.A <- update(gram.A) # calls lmerTest package
 anova(gram.A) # calculates p-values using Satterthwaite method for denominator df 
-# no effect of Gram (P >0.05)
+# no effect of Gram (P >0.05), but significant Rpf main effect
 
 gram.umax <- lmer(umax ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.umax <- update(gram.umax)
@@ -131,14 +130,18 @@ anova(gram.umax)
 # significant effect of Gram (P = 0.025)
 # significant effect of Gram*Treatment (P = 0.01)
 
-
 gram.L <- lmer(L ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.L <- update(gram.L)
 anova(gram.L)
-# significant effect of Gram*Treatment (P = 0.05)
+# significant effect of Gram*Treatment (P = 0.049)
 ```
 
 ## Calculate effect sizes for growth parameters 
+
+Using Cohen's D, which quantifies effect between two mean values.
+Calculated as difference of means divided by pooled standard deviation
+Cohen's D of 1.0, indicates groups different by one standard deviation, etc.
+As a rule of thumb, D = |0.2| = "small", |0.5| = "medium", >|0.8| = "large" effects
 
 ```{r}
 # Calculate means across strains for +Rpf Treatment 
@@ -158,10 +161,27 @@ gc.rpf.pool.sd <- dplyr::select(gc, A, umax, L, Strain) %>%
    group_by(Strain) %>%
    summarize(sd.A = sd(A), sd.umax = sd(umax), sd.L = sd(L)) 
 
-# Calculate effect size with Cohen's D
+# Calculate effect size across all strains with Cohen's D
 cohen.d <- (gc.rpf.plus.strains[,2:4] - gc.rpf.minus.strains[,2:4]) / gc.rpf.pool.sd[,2:4]
 colnames(cohen.d) <- c("A", "umax", "L")
 rownames(cohen.d) <- t(as.data.frame(gc.rpf.minus.strains[1]))
+
+# Calculate effect size for Gram + vs. Gram - using Cohen's D
+
+gram.code <- as.factor(c("neg","pos","pos","neg","pos","neg","neg","neg","pos","pos","pos","pos"))
+cohen.d.gram <- data.frame(cohen.d, gram.code)
+
+gc.gram <- dplyr::select(cohen.d.gram, A, umax, L, gram.code) %>%
+   group_by(gram.code) %>%
+   summarize(mean.A = mean(A), mean.umax = mean(umax), mean.L = mean(L))
+
+#  Gram  A        umax     L
+#  neg   1.71     1.66     -0.634
+#  pos   0.522    0.261    -1.13 
+
+# Interpretation: based on GLMM, Gram status influences Rpf response for umax and lag time
+# Cohen D on umax: Rpf effect size is "small" for Gram +, but "large" for Gram -
+# Cohen D on lag: Rpf effect is "medium" for Gram -, but "large" for Gram +
 ```
 
 ## Phylogenetic analyses
@@ -222,7 +242,6 @@ tree <- keep.tip(tree, row.names(cohen.d))
 tree$node.label <- c(1:tree$Nnode)
 tree$node.label <- c(13:23)
 
-
 # Define color palette
 BuRd <- c("#0571B0","#92C5DE","gray92", "#F7F7F7","#F4A582","#CA0020")
 mypalette <- colorRampPalette(BuRd)
@@ -231,14 +250,15 @@ mypalette <- colorRampPalette(BuRd)
 png(filename="~/GitHub/Rpf/figures/Fig6.png",
     width = 1200, height = 1200, res = 96*2, bg = "white")
 
-par(mar=c(0.5,0.5,0.5,1.5) + 0.1)
+
+#par(mar=c(0.5,0.5,0.5,1.5) + 0.2)
+par(mar=c(0.5,0.5,0.5,1.5) + 0.2, oma = c(0.5, 0, 0, 0))
 
 # Rotate node (node number changes after removing outgroup)
 tree.2 <- ape::rotate(tree, node = 13)
 tree.3 <- reroot(tree.2, node.number = 14)
 dat.2 <- cohen.d[c(tree.3$tip.label), ]
 
-#x <- phylo4d(tree.2, tip.data = cohen.d[])
 x <- phylo4d(tree.3, tip.data = dat.2)
 
 table.phylo4d(x, treetype = "phylo",
@@ -246,7 +266,23 @@ table.phylo4d(x, treetype = "phylo",
                 grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
                 edge.color = "black", edge.width = 2, box = FALSE, 
                 col = mypalette(25), pch = 15, cex.symbol = 2, font = 2,
-                ratio.tree = 0.75, cex.legend = 1.25, center = FALSE)
+                ratio.tree = 0.75, cex.legend = 1.25, center = FALSE,
+                show.var.label = FALSE)
+
+text(3.0, 12.3, expression("Firmicutes"), cex = 1)
+text(3.0, 9, expression("Actinobacteria"), cex = 1)
+text(3.0, 3.75, expression("Gram negative"), cex = 1)
+text(8.1, 10.7, expression("Corynebacterineae"), cex = 0.55)
+text(7.0, 7.10, expression("Micrococcineae"), cex = 0.55)
+text(6.3, 5.35, expression("Bacteroidetes"), cex = 1)
+text(6.3, 1.5, expression("Proteobacteria"), cex = 1)
+text(9.5, 3.75, expression(beta), cex= 0.75)
+text(9.5, 2.20, expression(alpha), cex= 0.75)
+text(9.5, 1.20, expression(gamma), cex= 0.75)
+
+text(11.25, 0.375, expression("Yield"), cex= 0.75, srt = 90)
+text(12.45, 0.375, expression(paste(mu, "max")), cex= 0.75, srt = 90)
+text(13.6, 0.175, expression("Lag time"), cex= 0.75, srt = 90, xpd = TRUE)
 
 # Close Plot Device
 dev.off()
@@ -347,4 +383,227 @@ seq.sim.umax <- lm(seq.dist.final$umax ~ seq.sim.final$Similarity, data = seq.si
 seq.sim.L <- lm(seq.dist.final$L ~ seq.sim.final$Similarity, data = seq.sim.final)
 spearman.test(seq.dist.final$L, seq.sim.final$Similarity)
 # P = 0.294 
+```
+
+## Figure corresponding to two-way ANOVA
+Plot mean and SEM for growth parameter (yield, umax, lag) on each strain
+in both +Rpf and -Rpf treatments. 
+
+# Subset data
+
+```{r}
+# Order df.table
+
+sort.strain <- c("KBS0812", "KBS0724", "KBS0706", "KBS0702", "KBS0703", 
+                 "KBS0714", "KBS0715", "KBS0701", "KBS0711", "KBS0712", 
+                 "KBS0710", "KBS0705")
+
+gc.2 <- gc %>%
+  mutate(Strain =  factor(Strain, levels = sort.strain)) %>%
+  arrange(Strain) 
+
+# Yield (A) for +Rpf 
+A.plus <- filter(gc.2, Treatment == "Rpf+") %>%
+   dplyr::select(A, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.A = mean(A), SE.A = sem(A))
+
+# Yield (A) for -Rpf 
+A.minus <- filter(gc.2, Treatment == "Rpf-") %>%
+   dplyr::select(A, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.A = mean(A), SE.A = sem(A))
+
+# Max growth (umax) for +Rpf 
+umax.plus <- filter(gc.2, Treatment == "Rpf+") %>%
+   dplyr::select(umax, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.umax = mean(umax), SE.umax = sem(umax)) 
+
+# Max growth (umax) for -Rpf 
+umax.minus <- filter(gc.2, Treatment == "Rpf-") %>%
+   dplyr::select(umax, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.umax = mean(umax), SE.umax = sem(umax)) 
+
+# Lag time (L) for +Rpf 
+L.plus <- filter(gc.2, Treatment == "Rpf+") %>%
+   dplyr::select(L, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.L = mean(L), SE.L = sem(L)) 
+
+# Lag time (L) for -Rpf 
+L.minus <- filter(gc.2, Treatment == "Rpf-") %>%
+   dplyr::select(L, Strain) %>%
+   group_by(Strain) %>%
+   summarize(mean.L = mean(L), SE.L = sem(L)) 
+```
+
+
+# Make figure
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/FigSup1.png",
+    width = 1200, height = 1200, res = 96*2, bg = "white")
+
+plot.new()
+par(oma=c(9,5,0,0), mar=c(1,2,1,1), mfrow = c(3,1))
+ 
+# Created x-axis plotting locations
+x.Rpf.minus <- seq(from = 1, to = 46, by = 4)
+x.Rpf.plus <- seq(from = 2, to = 46, by = 4)
+
+# Plot means for yield
+plot(x.Rpf.minus, A.minus$mean.A, ylim = c(0, 2.5), xlim = c(0, 46), 
+     pch = 22, col = "black", bg = "white", lwd = 1, cex = 2.25, yaxt = "n", 
+     xaxt = "n", cex.lab = 2, cex.axis = 1.5, las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+      
+points(x.Rpf.plus, A.plus$mean.A, pch = 22, col = "black", bg = "grey", 
+       lwd = 1, cex = 2.25)
+
+# Plot -Rpf errors
+arrows(x0 = x.Rpf.minus, y0 = A.minus$mean.A, 
+       y1 = (A.minus$mean.A + A.minus$SE.A), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.minus, y0 = A.minus$mean.A, 
+       y1 = (A.minus$mean.A - A.minus$SE.A), angle = 90, length = 0.02, lwd = 1.5)
+
+# Plot +Rpf errors
+arrows(x0 = x.Rpf.plus, y0 = A.plus$mean.A, 
+       y1 = (A.plus$mean.A + A.plus$SE.A), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.plus, y0 = A.plus$mean.A, 
+       y1 = (A.plus$mean.A - A.plus$SE.A), angle = 90, length = 0.02, lwd = 1.5)
+
+# Major Axes
+
+x.int <-seq(from = 1.5, to = 46, by = 4)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = F, at = x.int, las =3)
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0.0", "0.5", "1.0", "1.5", "2.0", "2.5"), at = c(0,0.5,1.0,1.5,2.0,2.5))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0,0.5,1.0,1.5,2.0, 2.5), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = x.int, labels = F)
+
+mtext(expression('Yield (OD600)'), side = 2,
+      outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
+
+# Add p-values
+text(5.75, 2.4, labels = expression("Treatment x Strain:" ~italic("P")~"< 0.0001"), cex = 1)
+
+legend(42, 2.5, c("-Rpf", "+Rpf"), pch = 22, pt.bg = c("white", "grey"), 
+       pt.cex = 2, pt.lwd = 1, bty = 'n', y.intersp = 1)
+
+
+# Plot means for umax
+plot(x.Rpf.minus, umax.minus$mean.umax, ylim = c(1e-07, 6e-05), xlim = c(0, 46), 
+     pch = 22, col = "black", bg = "white", lwd = 1, cex = 2.25, yaxt = "n", 
+     xaxt = "n", cex.lab = 2, cex.axis = 1.5, las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+      
+points(x.Rpf.plus, umax.plus$mean.umax, pch = 22, col = "black", bg = "grey", 
+       lwd = 1, cex = 2.25)
+
+# Plot -Rpf errors
+arrows(x0 = x.Rpf.minus, y0 = umax.minus$mean.umax, 
+       y1 = (umax.minus$mean.umax + umax.minus$SE.umax), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.minus, y0 = umax.minus$mean.umax, 
+       y1 = (umax.minus$mean.umax - umax.minus$SE.umax), angle = 90, length = 0.02, lwd = 1.5)
+
+# Plot +Rpf errors
+arrows(x0 = x.Rpf.plus, y0 = umax.plus$mean.umax, 
+       y1 = (umax.plus$mean.umax + umax.plus$SE.umax), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.plus, y0 = umax.plus$mean.umax, 
+       y1 = (umax.plus$mean.umax - umax.plus$SE.umax), angle = 90, length = 0.02, lwd = 1.5)
+
+# Major Axes
+x.int <-seq(from = 1.5, to = 46, by = 4)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = F, at = x.int, las =3)
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("1e-05","3e-05","5e-05"), at = c(1e-05,  3e-05, 5e-05))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(1e-05,  3e-05, 5e-05), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = x.int, labels = F)
+  
+mtext(expression(mu [max]* ' (hr'^-1*')'), side = 2,
+ outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
+
+# Add p-values
+text(5.5, 5.6e-05, labels = expression("Treatment x Strain:" ~italic("P")~"= 0.004"), cex = 1)
+
+
+# Plot means for Lag
+plot(x.Rpf.minus, L.minus$mean.L, ylim = c(0, 45), xlim = c(0, 46), 
+     pch = 22, col = "black", bg = "white", lwd = 1, cex = 2.25, yaxt = "n", 
+     xaxt = "n", cex.lab = 2, cex.axis = 1.5, las = 1, ylab = "", xlab = "")
+      box(lwd = 2)
+      
+points(x.Rpf.plus, L.plus$mean.L, pch = 22, col = "black", bg = "grey", 
+       lwd = 1, cex = 2.25)
+
+# Plot -Rpf errors
+arrows(x0 = x.Rpf.minus, y0 = L.minus$mean.L, 
+       y1 = (L.minus$mean.L + L.minus$SE.L), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.minus, y0 = L.minus$mean.L, 
+       y1 = (L.minus$mean.L - L.minus$SE.L), angle = 90, length = 0.02, lwd = 1.5)
+
+# Plot +Rpf errors
+arrows(x0 = x.Rpf.plus, y0 = L.plus$mean.L, 
+       y1 = (L.plus$mean.L + L.plus$SE.L), angle = 90, length = 0.02, lwd = 1.5)
+
+arrows(x0 = x.Rpf.plus, y0 = L.plus$mean.L, 
+       y1 = (L.plus$mean.L - L.plus$SE.L), angle = 90, length = 0.02, lwd = 1.5)
+
+# Major Axes
+x.int <-seq(from = 1.5, to = 46, by = 4)
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = sort.strain, at = x.int, las =3, col.axis = "gray40")
+
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0", "10", "20", "30","40"), at = c(0,10,20,30,40))
+
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0,10,20,30,40), labels = F)
+
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = x.int, labels = F)
+
+mtext(expression('Lag time (hr)'), side = 2,
+      outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
+
+# Add p-values
+text(3, 42, labels = expression("Strain:" ~italic("P")~"= 0.009"), cex = 1)
+text(4.2, 33, labels = expression("Treatment:" ~italic("P")~"< 0.0001"), cex = 1)
+
+# Add taxon names and lines
+mtext('Gram +', side = 1, line = 8, at = 15, cex = 1.25)
+mtext('Gram -', side = 1, line = 8, at = 37, cex = 1.25)
+
+par(xpd=NA)
+segments(1, -35, 26, -35, col = "black", lwd = 2)
+segments(29, -35, 46, -35, col = "black", lwd = 2)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("./figures/FigSup1.png")
+
+grid.raster(img)
 ```
