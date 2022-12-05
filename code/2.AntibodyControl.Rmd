@@ -55,6 +55,9 @@ UL.95 <- aggregate(antibody$OD600 ~ Treatment, antibody,
 table <- data.frame(rpf.mean[1], rpf.mean[2], rpf.sem[2],
           LL.95[2], UL.95[2])
 colnames(table) <- c("Treatment", "mean", "sem", "LCI", "UCI")
+
+# Rpf led to a 3.96-fold (or 296%) increase in growth
+# Post-bleed compared to pre-bleed to 8.11-fold (or 88%) reduction
 ```
 
 ## Run an analysis of varaince (ANOVA)
@@ -65,7 +68,7 @@ summary(antibody.anova)
 TukeyHSD(antibody.anova)
   # no difference between -Rpf and +Rpf,+anti.28 --> P = 0.1166317
   # no difference between +Rpf and +Rpf,+anti.0 --> P = 0.9877646
-  # for all other comparisions, P < 0.0001
+  # for all other comparisons, P < 0.0001
 ```
 
 ## Make figure
@@ -86,7 +89,7 @@ par(mar = c(7, 7, 5, 7))
 
 # Add individuals points
 antibody.point <- plot(jitter(rep(1, length(no.rpf$OD600)), amount = 0.1), no.rpf$OD600, 
-      ylim = c(-0.2, 3.5), xlim = c(0.5, 5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
+      ylim = c(-0.2, 3.7), xlim = c(0.5, 5), pch = 21, col = "lightgrey", bg = "lightgrey", lwd = 2,
       cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, cex.axis = 1.5,
       las = 1, ylab = "", xlab = "")
       box(lwd = 2)
@@ -148,6 +151,11 @@ mtext(expression(~italic('Antibody treatment')), side = 1, line = 0.7,
 
 segments(0.7, -1, 1.5, -1, col = "black", lwd = 2, xpd = TRUE)
 segments(2.25, -1, 4.9, -1, col = "black", lwd = 2, xpd = TRUE)
+
+text(1, 1.65, labels = "a", cex = 1.75, col = 'gray60')
+text(2.5, 3.4, labels = "b", cex = 1.75, col = 'gray60')
+text(3.5, 3.4, labels = "b", cex = 1.75, col = 'gray60')
+text(4.5, 1.0, labels = "a", cex = 1.75, col = 'gray60')
 
 # Close Plot Device
 dev.off()
