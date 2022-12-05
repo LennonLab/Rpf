@@ -1,0 +1,195 @@
+---
+title: "Termination of dormancy with Rpf"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+  - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## Clear workspace and set directory
+```{r setup}
+rm(list=ls())
+setwd("~/Github/Rpf/code/6.Generality/test")
+```
+
+## Load packages and functions
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("gtools")
+require("nlme")
+require("MuMIn")
+source("../bin/modified_Gomp.R")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) 100*( sd(x)/mean(x))
+```
+
+# Load data and run Gompertz
+```{r}
+
+data.1 <- read.csv("../data/20160320_generality_growthcurve_p1.csv")
+data.1$Time <- data.1$Time/60 # convert mins to hrs
+
+data.2 <- read.csv("../data/20160323_generality_growthcurve_p2.csv")
+data.2$Time <- data.2$Time/60 # convert mins to hrs
+
+# Pull out strains
+
+# Plate 1
+KBS0701.p <- data.1[1:which(data.1[,1] == 1200/60),c(1,2,3,4,5)]
+KBS0702.p <- data.1[1:which(data.1[,1] == 1050/60),c(1,6,7,8,9)]
+KBS0703.p <- data.1[1:which(data.1[,1] == 1860/60),c(1,10,11,12,13)]
+KBS0706.p <- data.1[1:which(data.1[,1] == 4200/60),c(1,14,15,16,17)]
+KBS0705.p <- data.1[1:which(data.1[,1] == 1950/60),c(1,18,19,20,21)]
+KBS0724.p <- data.1[1:which(data.1[,1] == 1200/60),c(1,22,23,24,25)]
+KBS0701.m <- data.1[1:which(data.1[,1] == 1230/60),c(1,26,27,28,29)] 
+KBS0702.m <- data.1[1:which(data.1[,1] == 1110/60),c(1,30,31,32,33)]
+KBS0703.m <- data.1[1:which(data.1[,1] == 2070/60),c(1,34,35,36,37)]
+KBS0706.m <- data.1[1:which(data.1[,1] == 3840/60),c(1,38,39,40,41)]
+KBS0705.m <- data.1[1:which(data.1[,1] == 2010/60),c(1,42,43,44,45)]
+KBS0724.m <- data.1[1:which(data.1[,1] == 1890/60),c(1,46,47,48,49)]
+
+# Plate 2
+KBS0710.p <- data.2[1:which(data.2[,1] == 3390/60),c(1,2,3,4,5)]
+KBS0711.p <- data.2[1:which(data.2[,1] == 3360/60),c(1,6,7,8,9)]
+KBS0712.p <- data.2[1:which(data.2[,1] == 1470/60),c(1,10,11,12,13)]
+KBS0714.p <- data.2[1:which(data.2[,1] == 5790/60),c(1,14,15,16,17)] #  rep 2 outlier?
+KBS0715.p <- data.2[1:which(data.2[,1] == 5790/60),c(1,18,19,20,21)] 
+KBS0812.p <- data.2[1:which(data.2[,1] == 3690/60),c(1,22,23,24,25)]
+KBS0710.m <- data.2[1:which(data.2[,1] == 3540/60),c(1,26,27,28,29)]
+KBS0711.m <- data.2[1:which(data.2[,1] == 1560/60),c(1,30,31,32,33)]
+KBS0712.m <- data.2[1:which(data.2[,1] == 1980/60),c(1,34,35,36,37)]
+KBS0714.m <- data.2[1:which(data.2[,1] == 5790/60),c(1,38,39,40,41)] 
+KBS0715.m <- data.2[1:which(data.2[,1] == 5790/60),c(1,42,43,44,45)] 
+KBS0812.m <- data.2[1:which(data.2[,1] == 3990/60),c(1,46,47,48,49)]
+
+
+# Run Gompertz (only need to run once then comment out)
+
+# Plate 1
+KBS0701.p.mod <- growth.modGomp(input = KBS0701.p, output.name = "KBS0701.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0702.p.mod <- growth.modGomp(input = KBS0702.p, output.name = "KBS0702.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0703.p.mod <- growth.modGomp(input = KBS0703.p, output.name = "KBS0703.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0706.p.mod <- growth.modGomp(input = KBS0706.p, output.name = "KBS0706.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0705.p.mod <- growth.modGomp(input = KBS0705.p, output.name = "KBS0705.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0724.p.mod <- growth.modGomp(input = KBS0724.p, output.name = "KBS0724.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0701.m.mod <- growth.modGomp(input = KBS0701.m, output.name = "KBS0701.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0702.m.mod <- growth.modGomp(input = KBS0702.m, output.name = "KBS0702.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0703.m.mod <- growth.modGomp(input = KBS0703.m, output.name = "KBS0703.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0706.m.mod <- growth.modGomp(input = KBS0706.m, output.name = "KBS0706.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0705.m.mod <- growth.modGomp(input = KBS0705.m, output.name = "KBS0705.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0724.m.mod <- growth.modGomp(input = KBS0724.m, output.name = "KBS0724.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+# Plate 2
+KBS0710.p.mod <- growth.modGomp(input = KBS0710.p, output.name = "KBS0710.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0711.p.mod <- growth.modGomp(input = KBS0711.p, output.name = "KBS0711.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0712.p.mod <- growth.modGomp(input = KBS0712.p, output.name = "KBS0712.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0714.p.mod <- growth.modGomp(input = KBS0714.p, output.name = "KBS0714.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0715.p.mod <- growth.modGomp(input = KBS0715.p, output.name = "KBS0715.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0812.p.mod <- growth.modGomp(input = KBS0812.p, output.name = "KBS0812.p.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0710.m.mod <- growth.modGomp(input = KBS0710.m, output.name = "KBS0710.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0711.m.mod <- growth.modGomp(input = KBS0711.m, output.name = "KBS0711.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0712.m.mod <- growth.modGomp(input = KBS0712.m, output.name = "KBS0712.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0714.m.mod <-  growth.modGomp(input = KBS0714.m, output.name = "KBS0714.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0715.m.mod <-growth.modGomp(input = KBS0715.m, output.name = "KBS0715.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+KBS0812.m.mod <- growth.modGomp(input = KBS0812.m, output.name = "KBS0812.m.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+
+# Output
+KBS0701.p.out <- read.table("../output/plate1/KBS0701.p.parms.txt", sep = ",", header=TRUE)
+KBS0702.p.out <- read.table("../output/plate1/KBS0702.p.parms.txt", sep = ",", header=TRUE)
+KBS0703.p.out <- read.table("../output/plate1/KBS0703.p.parms.txt", sep = ",", header=TRUE)
+KBS0706.p.out <- read.table("../output/plate1//KBS0706.p.parms.txt", sep = ",", header=TRUE)
+KBS0705.p.out <- read.table("../output/plate1//KBS0705.p.parms.txt", sep = ",", header=TRUE)
+KBS0724.p.out <- read.table("../output/plate1//KBS0724.p.parms.txt", sep = ",", header=TRUE)
+KBS0701.m.out <- read.table("../output/plate1/KBS0701.m.parms.txt", sep = ",", header=TRUE)
+KBS0702.m.out <- read.table("../output/plate1/KBS0702.m.parms.txt", sep = ",", header=TRUE)
+KBS0703.m.out <- read.table("../output/plate1//KBS0703.m.parms.txt", sep = ",", header=TRUE)
+KBS0706.m.out <- read.table("../output/plate1//KBS0706.m.parms.txt", sep = ",", header=TRUE)
+KBS0705.m.out <- read.table("../output/plate1//KBS0705.m.parms.txt", sep = ",", header=TRUE)
+KBS0724.m.out <- read.table("../output/plate1//KBS0724.m.parms.txt", sep = ",", header=TRUE)
+
+KBS0710.p.out <- read.table("../output/plate2/KBS0710.p.parms.txt", sep = ",", header=TRUE)
+KBS0711.p.out <- read.table("../output/plate2/KBS0711.p.parms.txt", sep = ",", header=TRUE)
+KBS0712.p.out <- read.table("../output/plate2//KBS0712.p.parms.txt", sep = ",", header=TRUE)
+KBS0714.p.out <- read.table("../output/plate2//KBS0714.p.parms.txt", sep = ",", header=TRUE)
+KBS0715.p.out <- read.table("../output/plate2//KBS0715.p.parms.txt", sep = ",", header=TRUE)
+KBS0812.p.out <- read.table("../output/plate2//KBS0812.p.parms.txt", sep = ",", header=TRUE)
+KBS0710.m.out <- read.table("../output/plate2/KBS0710.m.parms.txt", sep = ",", header=TRUE)
+KBS0711.m.out <- read.table("../output/plate2/KBS0711.m.parms.txt", sep = ",", header=TRUE)
+KBS0712.m.out <- read.table("../output/plate2//KBS0712.m.parms.txt", sep = ",", header=TRUE)
+KBS0714.m.out <- read.table("../output/plate2/KBS0714.m.parms.txt", sep = ",", header=TRUE)
+KBS0715.m.out <- read.table("../output/plate2/KBS0715.m.parms.txt", sep = ",", header=TRUE)
+KBS0812.m.out <- read.table("../output/plate2/KBS0812.m.parms.txt", sep = ",", header=TRUE)
+
+parms.out.plate1 <- rbind(KBS0701.p.out, KBS0702.p.out, KBS0703.p.out, KBS0706.p.out, KBS0705.p.out, KBS0724.p.out,
+                  KBS0701.m.out, KBS0702.m.out, KBS0703.m.out, KBS0706.m.out, KBS0705.m.out, KBS0724.p.out)
+
+write.table(parms.out.plate1, "../data/parms.out.plate1.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+
+parms.out.plate2 <- rbind(KBS0710.p.out, KBS0711.p.out, KBS0712.p.out, KBS0714.p.out, KBS0715.p.out, KBS0812.p.out,
+                  KBS0710.m.out, KBS0711.m.out, KBS0712.m.out, KBS0714.m.out, KBS0715.m.out, KBS0812.m.out)
+
+write.table(parms.out.plate2, "../data/parms.out.plate2.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+
+
+               
+nm.parms.ord.3 <- nm.parms.raw.3[mixedorder(nm.parms.raw.3$Curve),]
+nm.parms.3 <- cbind(treats.nm.3, nm.parms.ord.3)
+treats.nm.3$well == nm.parms.3$Curve
+gen <- round((1997/300)*nm.parms.3$day,0)
+nm.parms.3 <-cbind(nm.parms.3, gen)
+nm.parms.3 <- nm.parms.3[, c(1:4,10:12,20)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+grow.rpf <- growth.modGomp(input = rpf, output.name = "rpf.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+out.ctrl <- read.table("../output/ctrl.parms.txt", sep = ",", header=TRUE)
+out.rpf <- read.table("../output/rpf.parms.txt", sep = ",", header=TRUE)
+
+treats.ctrl <- read.csv("../data/treatments_batch1_NM.csv")
+treats.rpf[rep(seq_len(nrow(treats.nm.1)), each = 19), ]
+```

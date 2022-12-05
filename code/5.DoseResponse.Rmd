@@ -15,7 +15,7 @@ Termination of dormancy in soil bacteria with resuscitation promoting factor (Rp
 ```{r setup}
 rm(list=ls())
 getwd()
-knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+setwd("~/GitHub/Rpf")
 ```
 
 ## Load packages and functions
@@ -55,11 +55,15 @@ dose <- data.frame(biomass, rel.biomass)
 ## Fit growth to Rpf using asymetric Laplace with maxium likelihood
 
 ```{r}
+
+# The model "fit" includes parameter `a`, which defines maximum growth
+# Without `a`, the model can't "reach" the peak
+
 A = 0.40 # Maximum biomass (0.4)
-X = 40 # Optimum Rpf (45)
-K = 0.9 # Kappa; <1 right side decays slowly; >1 left side decays slowly (0.5)
-L = -0.04 # Lamdba; peakiness (-0.5); larger = flatter
-Z = 0.02 # Error (10)
+X = 40 # Optimum Rpf (40) or location parameter
+K = 0.9 # Kappa (0.9); <1 right side decays slowly; >1 left side decays slowly
+L = -0.04 # Lambda (-0.04); larger = peakier; smaller = flatter
+Z = 0.1 # Error (0.02)
 
 fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)* 
             k ^sign(x - Rpf)), sd = z), start = list(a = A, x = X, k = K, l = L, z = Z), 
@@ -73,7 +77,18 @@ fit <- mle2(rel.biomass ~ dnorm(mean = a*exp(-(Rpf-x) * l * sign(x - Rpf)*
 # l -0.0406811  0.0038855 -10.4701 < 2.2e-16 ***
 # z  0.0225393  0.0064276   3.5067 0.0004538 ***
 
-# -2 log L: -28.50004 
+
+# The model "fit2" does not include the parameter `a`
+# It doesn't work
+
+M = 37 # Location (40)
+K = 1 # Kappa (0.9); shape parameter; 1 = symmetric; <1 = left side steep, >1 right side steeper
+L = 0.1 # Lambda (-0.04); larger = peakier; smaller = flatter
+Z = 10 # Error (0.02)
+
+fit2 <- mle2(rel.biomass ~ dnorm(mean = (l / k + 1/k) * 
+        exp(-(Rpf-m) * l * sign(Rpf-m) * k^sign(Rpf-m)), sd = z),
+        start = list(m = M, k = K, l = L, z = Z), data = dose)
 ```
 
 # Plot data and function
@@ -122,3 +137,4 @@ graphics.off()
 img <- readPNG("./figures/Fig5.png")
 grid.raster(img)
 ```
+

@@ -1,0 +1,78 @@
+---
+title: "Termination of dormancy with Rpf"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+  - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## Clear workspace and set directory
+```{r setup}
+rm(list=ls())
+setwd("~/Github/Rpf/code/4.GrowthCurves/test")
+```
+
+## Load packages and functions
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("gtools")
+require("nlme")
+require("MuMIn")
+source("../bin/modified_Gomp.R")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) 100*( sd(x)/mean(x))
+```
+
+# Load data and run Gompertz
+```{r}
+
+#data.ctrl <- read.csv("../data/growth.curve.ctrl.csv")
+try2 <- read.csv("../data/try.csv")
+try2$Time2 <- (try2$Time2)/24
+#try2$time <- as.numeric(sub("^(\\d+):(\\d+).*", "\\1.\\2", try2$time))
+
+# Convert time from hours to days
+#data.ctrl$time <- (data.ctrl$time)/24
+#head(data.ctrl, header = T)
+
+#try$Time <- as.numeric(sub("^(\\d+):(\\d+).*", "\\1.\\2", try$Time))
+#head(try, header = T)
+
+# Pull out wells over time
+ctrl <-  data.ctrl[,c(1,2,3,4,5)]
+rpf <-  data[,c(1,6,7,8,9)]
+try.this <- try2[,c(2,3,4,5)]
+#try.this.2 <- try[,c(2,3,4,5,6)]
+
+# Run Gompertz (only need to run once then comment out)
+
+grow.try <- growth.modGomp(input = try.this, output.name = "try.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+#try$Time2 <- (try$Time2)/24
+#try.this.2 <- try[,c(2,3,4,5,6)]
+
+#grow.try.2 <- growth.modGomp(input = try.this.2, output.name = "try.parms.2",
+#               synergy = F, temp = F, smooth = T, trim = T)
+
+#grow.ctrl <- growth.modGomp(input = data.ctrl, output.name = "ctrl.parms",
+#               synergy = F, temp = F, smooth = T, trim = T)
+
+grow.ctrl <- growth.modGomp(input = ctrl, output.name = "ctrl.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+
+
+grow.rpf <- growth.modGomp(input = rpf, output.name = "rpf.parms",
+               synergy = F, temp = F, smooth = T, trim = T)
+
+out.ctrl <- read.table("../output/ctrl.parms.txt", sep = ",", header=TRUE)
+out.rpf <- read.table("../output/rpf.parms.txt", sep = ",", header=TRUE)
+
+treats.ctrl <- read.csv("../data/treatments_batch1_NM.csv")
+treats.rpf[rep(seq_len(nrow(treats.nm.1)), each = 19), ]
+```
