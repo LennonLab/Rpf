@@ -38,7 +38,7 @@ data.rpf <- read.csv("../data/growth.curve.rpf.csv")
 data.rpf$Time <- (data.rpf$Time)/60
 
 grow.ctrl <- growth.modGomp(input = data.ctrl, output.name = "ctrl.parms",
-               synergy = F, temp = F, smooth = T, trim = T)
+               synergy = F, temp = F, smooth = T, trim = F)
 
 grow.rpf <- growth.modGomp(input = data.rpf, output.name = "rpf.parms",
                synergy = F, temp = F, smooth = T, trim = T)
