@@ -168,7 +168,7 @@ growth.modGomp <- function(input = " ", output.name = " ", skip = "",
     grids1<-list(A=c(0.8 * max(na.omit(tmpdata[,2])), max(na.omit(tmpdata[,2])), 
                      1.2 * max(na.omit(tmpdata[,2]))),
                  umax=c(0.05, 0.1, 1, 2),
-                 L=c(1, 50, 100, 500),
+                 L=c(1, 50, 100, 600), # 500
                  z=c(-0.5, -0.05, -0.005))
     start1<-list(b0=intercept.guess,A=max(na.omit(tmpdata[,2])),umax=(2 * delta),L=0,z=-0.01)
 

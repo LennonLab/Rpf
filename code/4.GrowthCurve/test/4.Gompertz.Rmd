@@ -30,7 +30,6 @@ cv <- function(x) 100*( sd(x)/mean(x))
 
 # Load data and run Gompertz
 ```{r}
-
 data.ctrl <- read.csv("../data/growth.curve.control.csv")
 data.ctrl$Time <- (data.ctrl$Time)/60
 
@@ -46,6 +45,6 @@ grow.rpf <- growth.modGomp(input = data.rpf, output.name = "rpf.parms",
 out.ctrl <- read.table("../output/ctrl.parms.txt", sep = ",", header=TRUE)
 out.rpf <- read.table("../output/rpf.parms.txt", sep = ",", header=TRUE)
 
-treats.ctrl <- read.csv("../data/treatments_batch1_NM.csv")
-treats.rpf[rep(seq_len(nrow(treats.nm.1)), each = 19), ]
+#treats.ctrl <- read.csv("../data/treatments_batch1_NM.csv")
+#treats.rpf[rep(seq_len(nrow(treats.nm.1)), each = 19), ]
 ```
