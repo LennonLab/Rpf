@@ -54,34 +54,24 @@ add.hull <- function(model = "", pred.frame = ""){
 
 ```{r}
 # Load parameters from Gompertz analysis of growth curves
-gc.param.1 <- read.delim("data/generality/20160320_generality_gomp_param_output.txt", sep = ",", header = TRUE)
-gc.param.2 <- read.delim("data/generality/20160323_generality_gomp_param_output.txt", sep = ",", header = TRUE)
+gc.param.1 <- read.delim("code/6.Generality/data/parms.out.plate1.txt", sep = "\t", header = TRUE)
+gc.param.2 <- read.delim("code/6.Generality/data/parms.out.plate2.txt", sep = "\t", header = TRUE)
 
 # Load key associated with growth curve experiment 
-gc.key <- read.delim("data/generality/generality.gc.well.key.txt", sep = "\t", header = TRUE)
+gc.key <- read.delim("code/6.Generality/data/generality.gc.well.key.txt", sep = "\t", header = TRUE)
 
 # Merge data and key for data sets
 key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
-gc.param.1 <- cbind(gc.param.1,key.1)
+gc.param.1 <- cbind(gc.param.1, key.1)
+
 key.2 <- subset(gc.key, Run_Num == "2", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
-gc.param.2 <- cbind(gc.param.2,key.2)
+gc.param.2 <- cbind(gc.param.2, key.2)
 
 # Merge data sets
-gc <- rbind(gc.param.1, gc.param.2)
+gc.total <- rbind(gc.param.1, gc.param.2)
 
-# Remove unused parameters to simplify
-gc <- gc[ ,c(-(1:2),-(6:10))]
-
-# Yield parameter (A) sometimes reported as negative; take absolute value
-gc$A <- abs(gc$A)
-
-# Time recorded in minutes; report lag and umax in hours
-gc$L <-gc$L/60 # hours
-gc$umax <-gc$umax*60 # per hour
-
-# Round up small negative estimates of lag for KBS0702 to zero
-gc[6,3] = 0
-gc[8,3] = 0
+# Select desired columns
+gc <- gc.total[,c(4:6,14:19)]
 ```
 
 ## Perform two-way ANVOA to test for effect of Rpf among strains
@@ -99,38 +89,39 @@ gc$Rpf <- as.factor(gc$Rpf)
 # Two-way ANOVA on yield
 rpf.aov.A <- aov(A ~ Treatment + Strain + Treatment*Strain, data = gc)
 
-#                  Df Sum Sq Mean Sq F value   Pr(>F)    
-# Treatment         1  0.324  0.3243  41.008 1.36e-08 ***
-# Strain           11 12.997  1.1815 149.396  < 2e-16 ***
-# Treatment:Strain 11  0.502  0.0456   5.767 1.34e-06 ***
-# Residuals        72  0.569  0.0079                     
-
+#                 Df Sum Sq Mean Sq F value  Pr(>F)    
+#Treatment         1  0.169  0.1686  52.002 4.5e-10 ***
+#Strain           11  5.490  0.4991 153.970 < 2e-16 ***
+#Treatment:Strain 11  0.105  0.0096   2.954 0.00279 ** 
+#Residuals        72  0.233  0.0032                    
+          
 # Two-way ANOVA on umax
 rpf.aov.umax <- aov(umax ~ Treatment + Strain + Treatment*Strain, data = gc)
 
-#                  Df    Sum Sq   Mean Sq F value  Pr(>F)    
-# Treatment         1 5.400e-11 5.350e-11   1.681 0.19888    
-# Strain           11 1.274e-08 1.158e-09  36.394 < 2e-16 ***
-# Treatment:Strain 11 9.880e-10 8.980e-11   2.822 0.00406 ** 
-# Residuals        72 2.291e-09 3.180e-11  
+#                 Df  Sum Sq  Mean Sq F value   Pr(>F)    
+#Treatment         1 0.00430 0.004301  22.287 1.13e-05 ***
+#Strain           11 0.17528 0.015935  82.563  < 2e-16 ***
+#Treatment:Strain 11 0.00895 0.000814   4.216 8.10e-05 ***
+#Residuals        72 0.01390 0.000193      
 
 # Two-way ANOVA on L
 rpf.aov.L <- aov(L ~ Treatment + Strain + Treatment*Strain, data = gc)
 
-#                  Df    Sum Sq   Mean Sq F value  Pr(>F)  
-# Treatment         1     32    31.6   7.305 0.00857 ** 
-# Strain           11   7766   706.0 163.430 < 2e-16 ***
-# Treatment:Strain 11     56     5.1   1.169 0.32354    
-# Residuals        72    311     4.3     
+#                 Df Sum Sq Mean Sq F value Pr(>F)    
+#Treatment         1      1     1.0   0.319  0.574    
+#Strain           11   7794   708.6 233.691 <2e-16 ***
+#Treatment:Strain 11     32     2.9   0.954  0.496    
+#Residuals        72    218     3.0     
 
-Treatment <- c("Rpf-", "Rpf-","Rpf-","Rpf-", "Rpf+","Rpf+","Rpf+","Rpf+")
-g.parms$Treatment <- Treatment
+# I don't know what this is for....
+#Treatment <- c("Rpf-", "Rpf-","Rpf-","Rpf-", "Rpf+","Rpf+","Rpf+","Rpf+")
+#g.parms$Treatment <- Treatment
 
 # Maximum growth rate (umax)
-g.parms.lag <- ddply(gc, c("Treatment"), summarise,
-                   mean=mean(L))
+#g.parms.lag <- ddply(gc, c("Treatment"), summarise,
+#                   mean=mean(L))
 
-umax <- transform(umax.init, lower=mean-sem, upper=mean+sem)
+#umax <- transform(umax.init, lower=mean-sem, upper=mean+sem)
 ```
 
 ## Test for Gram + vs. Gram - Rpf effect with generalized linear mixed model (GlMM)
@@ -140,21 +131,49 @@ umax <- transform(umax.init, lower=mean-sem, upper=mean+sem)
 # random intercept for Strains (i.e., 1|Strain)
 # REML (residual maximum likelihood): helps account for unbalanced design
 
+# Yield
 gram.A <- lmer(A ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.A <- update(gram.A) # calls lmerTest package
 anova(gram.A) # calculates p-values using Satterthwaite method for denominator df 
-# no effect of Gram (F[1,10]= 0.2814, P = 0.607)
-# but significant Rpf main effect (F[1,82]= 27.0, P <0.0001)
 
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                 Sum Sq  Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment      0.188936 0.188936     1    82 50.5229 3.958e-10 ***
+#Gram           0.013817 0.013817     1    10  3.6947  0.083511 .  
+#Treatment:Gram 0.032065 0.032065     1    82  8.5744  0.004412 ** 
+
+# Marginal main effect of Gram (F[1,10]= 3.6947, P = 0.083511)
+# Highly significant effect of Rpf (F[1,82]= 50.5, P = 3.958e-10)
+# Significant Rpf x Gram interaction (F[1,82]= 8.57, P = 0.004412)
+
+# Maximum growth rate
 gram.umax <- lmer(umax ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.umax <- update(gram.umax)
 anova(gram.umax)
-# significant effect of Gram*Treatment (F[1,81] = 11.45, P = 0.0011)
 
+#Type III Analysis of Variance Table with Satterthwaite's method
+#                  Sum Sq   Mean Sq NumDF DenDF F value    Pr(>F)    
+#Treatment      0.0052265 0.0052265     1    82 20.6522 1.878e-05 ***
+#Gram           0.0022106 0.0022106     1    10  8.7348  0.014399 *  
+#Treatment:Gram 0.0020941 0.0020941     1    82  8.2748  0.005122 ** 
+
+# Significant main effect of Gram (F[1,10]= 8.73, P = 0.014399)
+# Highly significant effect of Rpf (F[1,82]= 20.65, P = 1.878e-05)
+# Significant Rpf x Gram interaction (F[1,82]= 8.27, P = 0.005122)
+
+# Lag time
 gram.L <- lmer(L ~ Treatment + Gram + Treatment*Gram + (1|Strain), REML = TRUE, data = gc)
 gram.L <- update(gram.L)
 anova(gram.L)
-# significant effect of Gram*Treatment (F[1,82] = 3.99, P = 0.049)
+
+#               Sum Sq Mean Sq NumDF DenDF F value Pr(>F)
+#Treatment      0.8592  0.8592     1    82  0.2818 0.5970
+#Gram           5.0117  5.0117     1    10  1.6436 0.2288
+#Treatment:Gram 0.0642  0.0642     1    82  0.0210 0.8850
+
+# Significant main effect of Gram (F[1,10]= 0.2812, P = 0.2288)
+# Highly significant effect of Rpf (F[1,82]= 1.6436, P = 0.5970)
+# Significant Rpf x Gram interaction (F[1,82]= 0.0210, P = 0.8850)
 ```
 
 ## Calculate effect sizes for growth parameters 
@@ -196,14 +215,13 @@ gc.gram <- dplyr::select(cohen.d.gram, A, umax, L, gram.code) %>%
    group_by(gram.code) %>%
    summarize(mean.A = mean(A), mean.umax = mean(umax), mean.L = mean(L))
 
-#  Gram  A        umax     L
-#  neg   1.71     1.66     -0.634
-#  pos   0.522    0.261    -1.13 
+#  Gram  A        umax        L
+#  neg   1.67     1.65      -0.606
+#  pos   0.691    0.048   -0.544 
 
-# Based on GLMM (above), Gram*Treatment on lag and umax. 
-# Cohen's D supports this:
-# umax: "small" for Gram + (0.26), but "large" for Gram - (1.66)
-# lag: "medium" for Gram - (-0.63), but "large" for Gram + (-1.13)
+# umax: "small" for Gram + (0.048), but "large" for Gram - (1.66)
+# lag: "medium" for Gram - (-0.61) and Gram + (-0.54)
+# yield: "large" for Gram - (1.67) and "medium" for Gram + (0.691)
 ```
 
 ## Phylogenetic analyses
@@ -316,7 +334,6 @@ img <- readPNG("./figures/Fig6.png")
 grid.raster(img)
 ```
 
-
 ## Phylogenetic tests on effect sizes
 
 ```{r}
@@ -334,27 +351,32 @@ tree <- ape::drop.tip(tree.rooted,
 cohen.d <- as.matrix(cohen.d[match(tree$tip.label, row.names(cohen.d)), ])
 
 # Blomberg's K
+# K is a scaled ratio of the variance among species over the contrasts variance (the latter of which will be low if phylogenetic signal is high)
+# K, a variance ratio, is rescaled by dividing by the Brownian motion expectation. This gives it the property of having an expected value of 1.0 under Brownian evolution
+# Thus, K<1 indicates that closely related species resemble each other less than expected under the Brownian motion model of trait evolution. K>1 means that closely related species are more similar than predicted by the model. In other words, greater values of K suggest strongest effects of phylogenetic signal.
 
 ## Yield (A)
+#phylosig(anoleTree, anoleSize, method = "K", test = T)
+phylosignal(cohen.d[, 1], tree, method = "K", test = T)
 phylosignal(cohen.d[, 1], tree)
 Kcalc(cohen.d[, 1], tree)
 
-# K = 0.24 consistent with overdispersion of Rpf effect
-# But P = 0.629, so not significant
+# K = 0.36 consistent with overdispersion of Rpf effect
+# But P = 0.461, so not significant
 
 ## Maximum growth rate (umax)
 phylosignal(cohen.d[, 2], tree)
 Kcalc(cohen.d[, 2], tree)
 
-# K = 0.24 consistent with overdispersion of Rpf effect
-# But P = 0.546, so not significant
+# K = 1.01 consistent with Brownian motion
+# But P = 0.021
 
 ## Lag time (L)
 phylosignal(cohen.d[, 3], tree)
 Kcalc(cohen.d[, 3], tree)
 
-# K = 0.51 consistent with overdispersion of Rpf effect
-# But P = 0.115, so not significant
+# K = 0.207 consistent with overdispersion of Rpf effect
+# But P = 0.614, so not significant
 
 
 # Pagel's Lambda
@@ -364,15 +386,15 @@ Kcalc(cohen.d[, 3], tree)
 
 ## Yield (A)
 phylosig(tree, cohen.d[, 1], method = "lambda", test = T)
-# lambda = 6.6107e-05, P value = 1
+# lambda = 0.319, P value = 0.638
 
 # Maximum growth rate (umax)
 phylosig(tree, cohen.d[, 2], method = "lambda", test = T)
-# lambda = 0.51, P value = 0.429
+# lambda = 0.999934, P value = 0.02775
 
 # Lag time (L)
 phylosig(tree, cohen.d[, 3], method = "lambda", test = T)
-# lambda = 0.268, P value = 0.613
+# lambda = 6.6107e-05, P value = 1
 
 
 # Does Rpf effect size decrease with evolutionary distance to KBS0714?
@@ -399,27 +421,27 @@ seq.sim.final <- data.frame(cohen.d, seq.sim.KBS0714)
 seq.sim.A <- lm(seq.sim.final$A ~ seq.sim.final$Similarity, data = seq.sim.final)
 # summary(seq.sim.A)
 # plot(seq.sim.final$A,seq.sim.final$Similarity)
-# r2 = 0.17, P = 0.1701 
+# r2 = 0.18, P = 0.1645 
 
 seq.sim.umax <- lm(seq.sim.final$umax ~ seq.sim.final$Similarity, data = seq.sim.final)
 # summary(seq.sim.umax)
-# r2 = 0.20, P = 0.0805 
+# r2 = 0.3, P = 0.065 
 # plot(seq.sim.final$umax,seq.sim.final$Similarity)
 # cor.test(seq.sim.final$umax, seq.sim.final$Similarity, method = "spearman")
-# S = 472, p-value = 0.02591
+# S = 490, rho = -0.71, p-value = 0.01211
 # there's a negative relationship, but it's pretty weak and not very compelling
 
 seq.sim.L <- lm(seq.sim.final$L ~ seq.sim.final$Similarity, data = seq.sim.final)
 # summary(seq.sim.L)
 # plot(seq.sim.final$umax,seq.sim.final$Similarity)
-# r2 = 0.02, P = 0.2936 
+# r2 = 0.01, P = 0.762 
 ```
 
 # Plot growth parameters against one another for + Rpf and -Rpf
 
 ```{r}
 plot(gc.rpf.minus.strains$mean.L, gc.rpf.minus.strains$mean.umax, 
-     xlim =c(-5, 50), ylim = c(0.001, 0.22))
+     xlim =c(-5, 50), ylim = c(0.0001, 0.22))
 points(gc.rpf.plus.strains$mean.L, gc.rpf.plus.strains$mean.umax, 
        pch = 22, bg = "red")
 
@@ -446,47 +468,60 @@ g.traits <- cbind(g.traits, cohen.d[,1:3])
 colnames(g.traits)[14:16] <- c("A.effect", "umax.effect", "lag.effect")
 g.traits <- g.traits[!(g.traits$strain =="KBS0712"),]
 cor <- corr.test(g.traits[,2:16], method = "pearson")
+
+#updated
+# A effect: Mpamin = 0.044
+# umax effect: 
+
 # print(cor, digits = 3)
 # A.effect size correlated with Rmax: r = -0.557, p = 0.075
 # umax.effect size correlated with Wopt: r = 0.681, p = 0.021
 # umax.effect size correlated with niche breadth (b): r = -0.774, p = 0.005
 
+# Minimum moisture
+plot(g.traits$Mpamin, g.traits$A.effect)
+fit.MPamin <- lm(g.traits$A.effect ~ g.traits$Mpamin)
+#r2 = 0.7628, P = 0.0004443
 
-plot(g.traits$Rmax, g.traits$A.effect)
-fit.R <- lm(g.traits$A.effect ~ g.traits$Rmax)
-#r2 = 0.32, P = 0.04
+# Maximum respiration
+#plot(g.traits$Rmax, g.traits$A.effect)
+#fit.R <- lm(g.traits$A.effect ~ g.traits$Rmax)
+#r2 = 0.002524, P = 0.8834
 
+#plot(g.traits$lag.effect, g.traits$umax.effect)
+#fit.lag.umax <- lm(g.traits$umax.effect ~ g.traits$lag.effect)
+#r2 = 0.0473, P = 0.5206
+
+# Optimum water (transformed)
 Wopt.ab <- abs(g.traits$Wopt)
 log.Wopt <- log2(Wopt.ab)
 plot(log.Wopt,g.traits$umax.effect)
 fit.Wopt <- lm(g.traits$umax.effect ~ log.Wopt)
-#r2 = 0.32, P = 0.04
+#r2 = 0.4657, P = 0.02068
 
+# Niche breadth
 b.ab <- abs(g.traits$b)
 log.b <- log10(b.ab)
 plot(log.b,g.traits$umax.effect)
 fit.b <- lm(g.traits$umax.effect ~ log.b)
-#r2 = 0.33, P = 0.04
-
-
-
+#r2 = 0.3448, P = 0.05753
 
 # set plotting layout
-png(filename="~/GitHub/Rpf/figures//Fig.correlations.png",
+png(filename="~/GitHub/Rpf/figures/Fig7.png",
     width = 800, height = 1600, res = 96*2)
 plot.new()
 par(oma=c(6, 6, 2, 5), mar=c(2, 4, 2, 4), mfrow=c(3, 1))
 par(mai=c(0.7, 0.4, 0.1, 0))
 
 # calculate regressions
-fit.A <- lm(A.effect ~ Rmax, data = g.traits)
-pred.frameA <- data.frame(Rmax = seq(5, 120, by = 5))
-# F(1,9) = 4.047, p-value: 0.07513, r2, = 0.3102
+fit.A <- lm(A.effect ~ Mpamin, data = g.traits)
+pred.frameA <- data.frame(Mpamin = seq(-2.4, -0.01, by = 0.05))
+# F(1,9) = 28.95, p-value: 0.0004443, r2, = 0.7628
 
 # create minimum plot 
-plot(Rmax ~ A.effect, g.traits, axes = F, type = "n",
+plot(Mpamin ~ A.effect, g.traits, axes = F, type = "n",
      xlab = "", ylab = "",
-     xlim = c(0, 120), ylim = c(-3.5, 3.5), las = 1)
+     xlim = c(-2.6, 0), ylim = c(-3.5, 3.5), las = 1)
 box(lwd = 2)
 
 # Add hull confidence hulls and regression line
@@ -496,16 +531,16 @@ matlines(pred.frameA, predict(fit.A,
       lwd = c(2, 0, 0), col = "red")
 
 # Add points
-points(A.effect ~ Rmax, g.traits,
+points(A.effect ~ Mpamin, g.traits,
        pch = 21, col = "gray42", bg = "gray42", lwd = 2, cex = 1.5)
 
 # Add labels
 mtext(expression('Yield'), side = 2,
-     outer = FALSE, cex = 1, line = 2.5, adj = 0.5)
+     outer = FALSE, cex = 1.25, line = 2.5, adj = 0.5)
 
-mtext("Maximum respiration", side = 1, line = 2.75, cex = 1.25)
-mtext(expression(paste('(', mu , 'C-CO'[2]* ' g soil'^-1* 'd'^-1*')')), 
-                       side = 1, line = 4.75, cex = 1)
+mtext("Minimum moisture (MPa)", side = 1, line = 3.5, cex = 1.25)
+#mtext(expression(paste('(', mu , 'C-CO'[2]* ' g soil'^-1* 'd'^-1*')')), 
+#                       side = 1, line = 4.75, cex = 1)
 
 # Major Axes
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -513,14 +548,15 @@ axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at=c(-3, 0, 3), labels = F)
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("25", "50", "75", "100"), at = c(25, 50, 75, 100))
+     labels = c("-2.5", "-2", "-1.5", "-1", "-0.5", "0"), 
+     at = c(-2.5,-2,-1.5,-1,-0.5,0))
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(25, 50, 75, 100, 125), labels = F)
+     at = c(-2.5,-2,-1.5,-1,-0.5,0), labels = F)
 
 # Add stats and panel labels
-text(115, 3, labels = "A", col = "black", cex = 2)
-text(15, -2, labels = expression(r^2 == 0.31), cex = 1.25)
-text(17.5, -2.95, labels = expression(italic("P")~" = 0.075"), cex = 1.25)
+text(-0.1, 3, labels = "A", col = "black", cex = 2)
+text(-2.2, -2, labels = expression(r^2 == 0.76), cex = 1.25)
+text(-2.1, -2.95, labels = expression(italic("P")~" = 0.0004"), cex = 1.25)
 
 # panel 2
 
@@ -530,7 +566,7 @@ par(mai=c(0.4, 0.4, 0.4, 0))
 # calculate regressions
 fit.umax <- lm(umax.effect ~ Wopt, data = g.traits)
 pred.frame.u <- data.frame(Wopt = seq(-1.25, 0.2, by = 0.1))
-# F(1,9) = 7.795, p-value: 0.02099, r2, = 4641
+# F(1,9) = 10.66, p-value: 0.00976, r2, = 0.54
 
 # create minimum plot 
 plot(Wopt ~ umax.effect, g.traits, axes = F, type = "n",
@@ -552,11 +588,11 @@ points(umax.effect ~ Wopt, g.traits,
 mtext(expression('Rpf effect size'), side = 2,
       outer = FALSE, cex = 1.5, line = 6, adj = 0.5)
 
-mtext(expression(paste('',mu,'max')), side = 2, outer = FALSE, cex = 1, 
+mtext(expression(paste('',mu,'max')), side = 2, outer = FALSE, cex = 1.25, 
          line = 2.5, adj = 0.5)
 
-mtext("Niche optimum", side = 1, line = 2.75, cex = 1.25)
-mtext("Water potential (MPa)", side = 1, line = 4.75, cex = 1)
+mtext("Niche optimum (MPa)", side = 1, line = 3.5, cex = 1.25)
+#mtext("Water potential (MPa)", side = 1, line = 4.75, cex = 1)
 
 # Major Axes
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -570,8 +606,8 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 
 # Add stats and panel labels
 text(-1.2, 3, labels = "B", col = "black", cex = 2)
-text(0.006, -2, labels = expression(r^2 == 0.46), cex = 1.25)
-text(-0.02, -2.85, labels = expression(italic("P")~" = 0.021"), cex = 1.25)
+text(0.006, -2, labels = expression(r^2 == 0.54), cex = 1.25)
+text(-0.02, -2.85, labels = expression(italic("P")~" = 0.01"), cex = 1.25)
 
 
 # panel 3
@@ -582,7 +618,7 @@ par(mai=c(0.1, 0.4, 0.7, 0))
 # calculate regressions
 fit.umax2 <- lm(umax.effect ~ b, data = g.traits)
 pred.frame.u2 <- data.frame(b = seq(-0.16, 1.28, by = 0.1))
-# F(1,9) = 13.44, p-value: 0.005, r2, = 0.60
+# F(1,9) = 7.76, p-value: 0.02118, r2, = 0.46
 
 # create minimum plot 
 plot(b ~ umax.effect, g.traits, axes = F, type = "n",
@@ -601,10 +637,10 @@ points(umax.effect ~ b, g.traits,
        pch = 21, col = "gray42", bg = "gray42", lwd = 2, cex = 1.5)
 
 # Add labels
-mtext(expression(paste('',mu,'max')), side = 2, outer = FALSE, cex = 1, 
+mtext(expression(paste('',mu,'max')), side = 2, outer = FALSE, cex = 1.25, 
          line = 2.5, adj = 0.5)
-mtext("Niche breadth", side = 1, line = 2.75, cex = 1.25)
-mtext("Water potential (MPa)", side = 1, line = 4.75, cex = 1)
+mtext("Niche breadth (MPa)", side = 1, line = 3.5, cex = 1.25)
+#mtext("Water potential (MPa)", side = 1, line = 4.75, cex = 1)
 
 # Major Axes
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
@@ -618,15 +654,15 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
 
 # Add stats and panel labels
 text(1.15, 3, labels = "C", col = "black", cex = 2)
-text(-0.01, -2, labels = expression(r^2 == 0.60), cex = 1.25)
-text(0.035, -2.85, labels = expression(italic("P")~" = 0.005"), cex = 1.25)
+text(-0.01, -2, labels = expression(r^2 == 0.46), cex = 1.25)
+text(0.035, -2.85, labels = expression(italic("P")~" = 0.021"), cex = 1.25)
 
 # Close Plot Device
 dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("~/GitHub/Rpf/figures//Fig.correlations.png")
+img <- readPNG("~/GitHub/Rpf/figures/Fig7.png")
 grid.raster(img)
 ```
 
@@ -740,14 +776,14 @@ mtext(expression('Yield (OD600)'), side = 2,
       outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
 
 # Add p-values
-text(5.75, 2.4, labels = expression("Treatment x Strain:" ~italic("P")~"< 0.0001"), cex = 1)
+text(6, 2.4, labels = expression("Treatment x Strain:" ~italic("P")~"= 0.003"), cex = 1)
 
 legend(42, 2.5, c("-Rpf", "+Rpf"), pch = 22, pt.bg = c("white", "grey"), 
        pt.cex = 2, pt.lwd = 1, bty = 'n', y.intersp = 1)
 
 
 # Plot means for umax
-plot(x.Rpf.minus, umax.minus$mean.umax, ylim = c(1e-07, 6e-05), xlim = c(0, 46), 
+plot(x.Rpf.minus, umax.minus$mean.umax, ylim = c(0.01, 0.21), xlim = c(0, 46), 
      pch = 22, col = "black", bg = "white", lwd = 1, cex = 2.25, yaxt = "n", 
      xaxt = "n", cex.lab = 2, cex.axis = 1.5, las = 1, ylab = "", xlab = "")
       box(lwd = 2)
@@ -775,10 +811,10 @@ axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      labels = F, at = x.int, las =3)
 
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     labels = c("1e-05","3e-05","5e-05"), at = c(1e-05,  3e-05, 5e-05))
+     labels = c("0.02","0.08","0.14", "0.2"), at = c(0.02, 0.08, 0.14, 0.2))
 
 axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
-     at = c(1e-05,  3e-05, 5e-05), labels = F)
+     at = c(0.02, 0.08, 0.14, 0.2), labels = F)
 
 axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
      at = x.int, labels = F)
@@ -787,7 +823,7 @@ mtext(expression(mu [max]* ' (hr'^-1*')'), side = 2,
  outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
 
 # Add p-values
-text(5.5, 5.6e-05, labels = expression("Treatment x Strain:" ~italic("P")~"= 0.004"), cex = 1)
+text(6, 0.2, labels = expression("Treatment x Strain:" ~italic("P")~"<0.0001"), cex = 1)
 
 
 # Plot means for Lag
@@ -832,8 +868,8 @@ mtext(expression('Lag time (hr)'), side = 2,
       outer = FALSE, cex = 1.25, line = 4, adj = 0.5)
 
 # Add p-values
-text(3, 42, labels = expression("Strain:" ~italic("P")~"= 0.009"), cex = 1)
-text(4.2, 33, labels = expression("Treatment:" ~italic("P")~"< 0.0001"), cex = 1)
+text(3.5, 42, labels = expression("Strain:" ~italic("P")~"< 0.0001"), cex = 1)
+#text(4.2, 33, labels = expression("Treatment:" ~italic("P")~"< 0.0001"), cex = 1)
 
 # Add taxon names and lines
 mtext('Gram +', side = 1, line = 8, at = 15, cex = 1.25)
