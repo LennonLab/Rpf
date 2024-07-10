@@ -1,0 +1,189 @@
+---
+title: "Rpf: dose-response"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Relationship between growth and Rpf concentration
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list = ls())
+getwd()
+#setwd("~/Github/Rpf/code/5.DoseResponse")
+setwd("~/Github/Rpf/data/dose.response/")
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("dplyr")
+require("grid")
+require("plyr")
+require("tidyverse")
+require("bbmle")
+```
+
+# Construct pixel-OD600 relationship
+```{r}
+# Load standard curve data
+
+# dilut <- read.csv("~/Github/Rpf/data/dose.response/
+#           KBS0714.standard.curve.csv", header = TRUE, sep = ",")
+# 
+# dilut <- read.csv("data/dose.response/
+#           KBS0714.standard.curve.csv", header = TRUE, sep = ",")
+
+dilut <- read.csv("KBS0714.standard.curve.csv", header = TRUE, sep = ",")
+
+# Standardize OD from plate reader to spectrophotomer
+
+max.od <- filter(dilut, column == "8") 
+mean.max.od <- mean(max.od$od)
+# measured max OD on spectrophotometer of dilution series = 1.5 @ OD600
+dilut2 <- dilut %>%
+  mutate(od, od.st = od * 1.5/mean.max.od)
+
+# fit pixel vs. OD600 with exponential
+fit1 <- lm(log10(od.st) ~ log10(pixels), data = dilut2) 
+# intercept = -6.147
+# slope = 2.78
+```
+
+# Convert pixels into OD using standard curve
+```{r}
+pix <- read.csv("rpf.pixels.csv", header = TRUE, sep = ",")
+pix2 <- pix %>%
+  mutate(pixels, log.pixels = log10(pixels))
+pix3 <- pix2 %>%
+  mutate(log.pixels, log.od = fit1$coefficients[1] + fit1$coefficients[2]*log.pixels)
+pix4 <- pix3 %>%
+  mutate(log.od, od = 10^log.od)
+```
+          
+
+
+
+```{r}
+#dose.raw <- read.table("data/dose.response/dose.response.48well.txt", 
+#            header = TRUE, sep="\t")
+
+# calculate mean of the no-cell media wells
+#media <- filter(dose.raw, cell == "no") %>%
+#  dplyr::summarise(mean.med = mean(hist))
+
+media <- filter(pix4, cell == "no") %>%
+  dplyr::summarise(mean.med = mean(od))
+
+# subtract media-only from all wells containing cells
+cells <- filter(pix4, cell == "yes") %>%
+  mutate(cells, corr.od = od - 0.3720713)
+
+cells <- filter(cells, corr.od < "2.2")
+
+# # calculate sum of biomass for each row across rpf concentration
+# sum.by.row <- cells %>%
+#   select(row, corr.od) %>%
+#   group_by(row) %>%
+#   dplyr::summarise(row.sum = sum(corr.od))
+#   
+# # calculate sum of biomass for each row across rpf concentration
+# prop.biomass.A <- filter(cells, row == "A") %>%
+#    mutate(prop.biomass.A, prop.b = corr.hist / 404)
+# prop.biomass.B <- filter(cells, row == "B") %>%
+#    mutate(prop.biomass.B, prop.b = corr.hist / 427)
+# prop.biomass.C <- filter(cells, row == "C") %>%
+#    mutate(prop.biomass.C, prop.b = corr.hist / 435)
+# prop.biomass.D <- filter(cells, row == "D") %>%
+#    mutate(prop.biomass.D, prop.b = corr.hist / 465)
+# prop.biomass.E <- filter(cells, row == "E") %>%
+#    mutate(prop.biomass.E, prop.b = corr.hist / 463)
+# prop.biomass.F <- filter(cells, row == "F") %>%
+#    mutate(prop.biomass.F, prop.b = corr.hist / 441)
+# 
+# prop.biomass <- rbind(prop.biomass.A, prop.biomass.B, prop.biomass.C, prop.biomass.D, 
+#       prop.biomass.E, prop.biomass.F)
+```
+
+
+## Fit Monod equation with maximum likelihood
+
+```{r} 
+# Starting values for fitting Monod maximum likelihood
+V = 2.5 #85000
+K = 1 #0.025
+Z = 1 #100
+
+fit <- mle2(cells[,9] ~ dnorm(mean = v * cells[,3] / (k + cells[,3]), sd = z), 
+    start = list(v = V, k = K, z = Z), data = cells)
+```
+
+
+# Plot data and function
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/Fig5B.png",
+    width = 1200, height = 1200, res = 96*2) 
+
+plot.new()
+par(mar = c(7, 7, 5, 7))
+
+plot(cells[,3], cells[,9], xlim = c(-1, 7), 
+     ylim = c(-0.2, 2.5), type = "p", 
+     pch = 22, bg = "grey", col = "black", cex = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, lwd = 2, yaxt = "n", xaxt = "n")
+box(lwd=2)
+
+# Add ticks and tick labels
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c(0, 1, 2), at = c(0, 1, 2))
+
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 1, 2))
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(3, 1, 0),
+    labels = c(0, 2, 4, 6), at = c(0, 2, 4, 6))
+
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   at = c(0, 2, 4, 6))
+
+mtext(expression(paste('Rpf (', mu, 'M)')), side = 1, outer = TRUE, 
+      cex = 1.5, line = -4, adj = 0.5)
+      
+mtext(expression(paste('Biomass (OD 600)')), 
+      side = 2, outer = TRUE, cex = 1.5, line = -3.5, adj = 0.55)
+
+# Plot function
+curve((coef(fit)[[1]] * x) / (coef(fit)[[2]] + x), from = 0.05, 
+      to = 6, add = TRUE, lty = 2, lwd = 2.5)
+
+# Plot constants
+#abline(h = coef(fit)[[1]], col="darkgrey", lwd = 2, lty = 3)
+#segments(-2, coef(fit)[[1]]/2, 1.4, coef(fit)[[1]]/2, 
+#         col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+
+#segments(coef(fit)[[2]], -1, coef(fit)[[2]], coef(fit)[[1]]/2, 
+#         col = "darkgrey", lwd = 2, lty = 3, xpd = TRUE)
+
+# Add text for constants
+#text(-3.5, 62, labels = expression(~italic('V'[max])), cex = 1)
+#text(-5, 34, labels = expression(frac("1", "2")), cex= 0.65)
+#text(-2.4, 34, labels = expression(~italic('V'[max])), cex = 1)
+#text(4, -3, labels = expression(~italic('K'[m])), cex = 1) 
+
+
+# Close Plot Device
+dev.off()
+graphics.off()
+
+# Show Plot
+img <- readPNG("~/GitHub/Rpf/figures/Fig5B.png")
+grid.raster(img)
+```
+
