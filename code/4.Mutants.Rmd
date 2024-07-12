@@ -25,7 +25,6 @@ require("png")
 require("dplyr")
 require("grid")
 require("gdata")
-
 sem <- function(x) sqrt(var(x)/length(x))
 LL.95 <- function(x) t.test(x)$conf.int[1]
 UL.95 <- function(x) t.test(x)$conf.int[2]
@@ -169,7 +168,7 @@ trnc.tukey <- TukeyHSD(trnc.anova)
 # Make figure
 
 ```{r}
-png(filename="~/GitHub/Rpf/figures/Fig3.png",
+png(filename="~/GitHub/Rpf/figures/Fig4.png",
     width = 1200, height = 1200, res = 96*2) 
 
 plot.new()
@@ -488,6 +487,6 @@ mtext(expression('Biomass (OD600)'), side = 2,
 dev.off()
 graphics.off()
 
-img <- readPNG("./figures/Fig3.png")
+img <- readPNG("./figures/Fig4.png")
 grid.raster(img)
 ```

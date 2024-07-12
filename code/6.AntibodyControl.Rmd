@@ -15,8 +15,7 @@ Termination of dormancy in soil bacteria with resuscitation promoting factor (Rp
 ```{r setup}
 rm(list=ls())
 getwd()
-#setwd("~/GitHub/Rpf")
-knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+setwd("~/GitHub/Rpf/")
 ```
 
 ## Load packages and functions
@@ -24,7 +23,6 @@ knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf')
 ```{r}
 require("png")
 require("grid")
-
 sem <- function(x) sqrt(var(x)/length(x))
 ```
 
@@ -81,7 +79,7 @@ plus.rpf.anti.0 <- antibody[ which(antibody$Treatment == "Rpf+, Anti0+"),]
 plus.rpf.anti.28 <- antibody[ which(antibody$Treatment == "Rpf+, Anti28+"),]
 
 # Create plot
-png(filename="~/GitHub/Rpf/figures/Fig2.png",
+png(filename="~/GitHub/Rpf/figures/FigS4.png",
     width = 1200, height = 1200, res = 96*2) 
 
 plot.new()
@@ -146,7 +144,7 @@ mtext('post-bleed', side = 1, line = 1.75, at = 4.5, cex = 0.8, col ='gray40')
 
 
 mtext(expression(~italic('Antibody treatment')), side = 1, line = 0.7, 
-      at = 3.5, cex = 0.85, col ='gray40')
+      at = 3.5, cex = 0.95, col ='gray40')
 #mtext('Antigen', side = 1, line = 2.25, at = 5.7, cex = 1.5)
 
 segments(0.7, -1, 1.5, -1, col = "black", lwd = 2, xpd = TRUE)
@@ -162,7 +160,7 @@ dev.off()
 graphics.off()
 
 # Show Plot
-img <- readPNG("./figures/Fig2.png")
+img <- readPNG("./figures/FigS4.png")
 
 grid.raster(img)
 ```
