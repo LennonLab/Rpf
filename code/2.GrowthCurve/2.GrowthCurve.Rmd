@@ -15,8 +15,8 @@ Termination of dormancy in soil bacteria with resuscitation promoting factor (Rp
 ```{r setup}
 rm(list=ls())
 getwd()
-#setwd("~/GitHub/Rpf")
-knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf') 
+setwd("~/GitHub/Rpf")
+#knitr::opts_knit$set(root.dir = '~/../GitHub/Rpf/code/2.GrowthCurve/') 
 ```
 
 ## Load packages and functions
@@ -42,7 +42,7 @@ growth <- read.table("data/growth.curve/growth.curve.txt", sep="\t", header=TRUE
 ## Make figure
 
 ```{r}
-png(filename="~/GitHub/Rpf/figures/Fig3.png",
+png(filename="~/GitHub/Rpf/figures/Fig2.png",
     width = 1200, height = 900, res = 96*2) 
 plot.new()
 par(mar = c(7, 7, 5, 7))
@@ -71,16 +71,16 @@ axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1,
    at = c(0, 200, 400, 600))
 # Add axis labels
 mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
-      line = -4.5, adj = 0.6)
+      line = -4, adj = 0.6)
 mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
       line = -4, adj = 0.5)
-text(400, 3.6, labels = "+Rpf", cex = 1)
-text(540, 3.6, labels = "-Rpf", cex = 1)
+text(400, 3.6, labels = "+Rpf", cex = 1.25)
+text(540, 3.6, labels = "-Rpf", cex = 1.25)
 # Close Plot Device
 dev.off()
 graphics.off()
 # Show Plot
-img <- readPNG("./figures/Fig3.png")
+img <- readPNG("./figures/Fig2.png")
 grid.raster(img)
 ```
 
