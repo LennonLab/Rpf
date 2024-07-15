@@ -89,6 +89,15 @@ Z = 1 #100
 
 fit <- mle2(cells[,9] ~ dnorm(mean = v * cells[,3] / (k + cells[,3]), sd = z), 
     start = list(v = V, k = K, z = Z), data = cells)
+
+#Coefficients:
+#  Estimate Std. Error z value     Pr(z)    
+# v 2.320048   0.188245 12.3246 < 2.2e-16 ***
+# k 2.108313   0.391885  5.3799 7.452e-08 ***
+# z 0.163521   0.018058  9.0555 < 2.2e-16 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# -2 log L: -32.13305 
 ```
 
 
