@@ -21,21 +21,21 @@ setwd("~/GitHub/Rpf")
 ## Load packages and functions
 
 ```{r}
-require("png")
-require("dplyr")
-require("grid")
-require("psych")
-require("seqinr")
-require("ape")
-require("phylobase")
-require("RColorBrewer")
-require("phytools")
-require("geiger")
-require("picante")
-require("lme4")
-require("lmerTest")
-require("adephylo")
-require("psych")
+library("png")
+library("dplyr")
+library("grid")
+library("psych")
+library("seqinr")
+library("ape")
+library("phylobase")
+library("RColorBrewer")
+library("phytools")
+library("geiger")
+library("picante")
+library("lme4")
+library("lmerTest")
+library("adephylo")
+library("psych")
 source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
 
 # SEM
@@ -59,11 +59,11 @@ add.hull <- function(model = "", pred.frame = ""){
 
 ```{r}
 # Load parameters from Gompertz analysis of growth curves
-gc.param.1 <- read.delim("code/6.Generality/data/parms.out.plate1.txt", sep = "\t", header = TRUE)
-gc.param.2 <- read.delim("code/6.Generality/data/parms.out.plate2.txt", sep = "\t", header = TRUE)
+gc.param.1 <- read.delim("./code/5.Generality/data/parms.out.plate1.txt", sep = "\t", header = TRUE)
+gc.param.2 <- read.delim("code/5.Generality/data/parms.out.plate2.txt", sep = "\t", header = TRUE)
 
 # Load key associated with growth curve experiment 
-gc.key <- read.delim("code/6.Generality/data/generality.gc.well.key.txt", sep = "\t", header = TRUE)
+gc.key <- read.delim("code/5.Generality/data/generality.gc.well.key.txt", sep = "\t", header = TRUE)
 
 # Merge data and key for data sets
 key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
@@ -284,7 +284,7 @@ nodelabels(ml.tree$node.label, font = 2, bg = "white", frame = "r", cex = 0.5)
 
 ```{r}
 # Keep rooted but drop outgroup branch
-tree <- drop.tip(ml.tree.full, "Methanosarcina")
+tree <- drop.tip(ml.tree.full, "Methanosarcina", )
 tree$edge.length <- tree$edge.length + 10^-7
 
 # Reorder growth parameters to match tips
@@ -294,6 +294,18 @@ gc.map <- as.matrix(cohen.d[match(tree$tip.label, row.names(cohen.d)), ])
 tree <- keep.tip(tree, row.names(cohen.d))
 tree$node.label <- c(1:tree$Nnode)
 tree$node.label <- c(13:23)
+
+plot.phylo(tree, type = "phylogram", direction = "right", show.tip.label=TRUE, show.node.label = TRUE,
+           use.edge.length = FALSE, cex = 0.6, label.offset = 1)
+
+# Rotate node (node number changes after removing outgroup)
+tree.2 <- ape::rotate(tree, node = 13)
+tree.3 <- reroot(tree.2, node.number = 14)
+
+
+plot.phylo(tree.3, type = "phylogram", direction = "rightwards",
+           show.tip.label=TRUE, show.node.label = TRUE,
+           use.edge.length = FALSE, cex = 0.6, label.offset = 1)
 
 # Define color palette
 BuRd <- c("#0571B0","#92C5DE","gray92", "#F7F7F7","#F4A582","#CA0020")
@@ -306,15 +318,13 @@ png(filename="~/GitHub/Rpf/figures/Fig5.png",
 #par(mar=c(0.5,0.5,0.5,1.5) + 0.2)
 par(mar=c(0.5,0.5,0.5,1.5) + 0.2, oma = c(0.5, 0, 0, 0))
 
-# Rotate node (node number changes after removing outgroup)
-tree.2 <- ape::rotate(tree, node = 13)
-tree.3 <- reroot(tree.2, node.number = 14)
+
 
 dat.2 <- cohen.d[c(tree.3$tip.label), ]
 
 x <- phylo4d(tree.3, tip.data = dat.2)
-
-table.phylo4d(x, treetype = "phylo",
+x@edge[2:23, ] <- tree.3$edge
+table.phylo4d(x, treetype = "phylogram", 
                 symbol = "colors", show.node = F, cex.label = 0.65, 
                 grid = FALSE, scale = TRUE, use.edge.length = FALSE, 
                 edge.color = "black", edge.width = 2, box = FALSE, 
