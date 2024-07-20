@@ -36,6 +36,7 @@ library("lme4")
 library("lmerTest")
 library("adephylo")
 library("psych")
+library("tidyr")
 source("~/GitHub/Rpf/bin/Phylo4D.JTL.R")
 
 # SEM
@@ -59,24 +60,36 @@ add.hull <- function(model = "", pred.frame = ""){
 
 ```{r}
 # Load parameters from Gompertz analysis of growth curves
-gc.param.1 <- read.delim("./code/5.Generality/data/parms.out.plate1.txt", sep = "\t", header = TRUE)
-gc.param.2 <- read.delim("code/5.Generality/data/parms.out.plate2.txt", sep = "\t", header = TRUE)
+
+gc.param.1.dat <- read.delim("./code/5.Generality/data/parms.out.plate1.txt", sep = "\t", header = TRUE)
+gc.param.2.dat <- read.delim("code/5.Generality/data/parms.out.plate2.txt", sep = "\t", header = TRUE)
 
 # Load key associated with growth curve experiment 
 gc.key <- read.delim("code/5.Generality/data/generality.gc.well.key.txt", sep = "\t", header = TRUE)
 
 # Merge data and key for data sets
-key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
-gc.param.1 <- cbind(gc.param.1, key.1)
+key.1 <- subset(gc.key, Run_Num == "1", select = c(Strain, Gram, Phylum, Genus, Treatment, Rep))
+gc.param.1 <- cbind(gc.param.1.dat, key.1)
 
-key.2 <- subset(gc.key, Run_Num == "2", select = c(Strain,Gram,Phylum,Genus,Treatment,Rep))
-gc.param.2 <- cbind(gc.param.2, key.2)
+key.2 <- subset(gc.key, Run_Num == "2", select = c(Strain, Gram, Phylum, Genus, Treatment, Rep))
+gc.param.2 <- cbind(gc.param.2.dat, key.2)
 
 # Merge data sets
 gc.total <- rbind(gc.param.1, gc.param.2)
 
 # Select desired columns
 gc <- gc.total[,c(4:6,14:19)]
+
+# Filter by strain, Rpf, and parameter
+gc.filt<- gc %>%
+  group_by(Treatment, Strain) %>%
+  summarize(
+    mean_value = mean(umax)
+  )
+
+gc.filt.table <- gc.filt %>%
+  spread(key = Treatment, value = mean_value, fill = 0)
+
 ```
 
 ## Perform two-way ANVOA to test for effect of Rpf among strains

@@ -11,7 +11,7 @@ geometry: margin=2.54cm
 ## Clear workspace and set directory
 ```{r setup}
 rm(list=ls())
-setwd("~/Github/Rpf/code/6.Generality/test")
+setwd("~/Github/Rpf/code/5.Generality/test")
 ```
 
 ## Load packages and functions
@@ -149,14 +149,16 @@ KBS0714.m.out <- read.table("../output/plate2/KBS0714.m.parms.txt", sep = ",", h
 KBS0715.m.out <- read.table("../output/plate2/KBS0715.m.parms.txt", sep = ",", header=TRUE)
 KBS0812.m.out <- read.table("../output/plate2/KBS0812.m.parms.txt", sep = ",", header=TRUE)
 
-parms.out.plate1 <- rbind(KBS0701.p.out, KBS0702.p.out, KBS0703.p.out, KBS0706.p.out, KBS0705.p.out, KBS0724.p.out,
-                  KBS0701.m.out, KBS0702.m.out, KBS0703.m.out, KBS0706.m.out, KBS0705.m.out, KBS0724.p.out)
+parms.out.plate1 <- rbind(KBS0701.p.out, KBS0702.p.out, KBS0703.p.out, KBS0706.p.out, 
+                  KBS0705.p.out, KBS0724.p.out, KBS0701.m.out, KBS0702.m.out, KBS0703.m.out,
+                  KBS0706.m.out, KBS0705.m.out, KBS0724.m.out)
 
 write.table(parms.out.plate1, "../data/parms.out.plate1.txt", append = FALSE, sep = " ", dec = ".",
             row.names = TRUE, col.names = TRUE)
 
-parms.out.plate2 <- rbind(KBS0710.p.out, KBS0711.p.out, KBS0712.p.out, KBS0714.p.out, KBS0715.p.out, KBS0812.p.out,
-                  KBS0710.m.out, KBS0711.m.out, KBS0712.m.out, KBS0714.m.out, KBS0715.m.out, KBS0812.m.out)
+parms.out.plate2 <- rbind(KBS0710.p.out, KBS0711.p.out, KBS0712.p.out, KBS0714.p.out, 
+                  KBS0715.p.out, KBS0812.p.out, KBS0710.m.out, KBS0711.m.out, KBS0712.m.out,
+                  KBS0714.m.out, KBS0715.m.out, KBS0812.m.out)
 
 write.table(parms.out.plate2, "../data/parms.out.plate2.txt", append = FALSE, sep = " ", dec = ".",
             row.names = TRUE, col.names = TRUE)
