@@ -93,7 +93,7 @@ axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1.25,
 mtext(expression(paste('Peptidoglycan (', mu, 'g/mL)')), side = 1, outer = TRUE, 
       cex = 1.5, line = -4, adj = 0.5)
 
-mtext("Murimidase activity", side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.55)
+mtext("Muramidase activity", side = 2, outer = TRUE, cex = 1.5, line = -2, adj = 0.55)
 
 mtext(expression(paste('(fluorescence min '^-1*')')), side = 2, outer = TRUE, 
       cex = 1.25, line = -4, adj = 0.55)      

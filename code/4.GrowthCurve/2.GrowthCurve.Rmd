@@ -1,0 +1,328 @@
+---
+title: "Rpf: Growth Curve"
+author: "Jay T. Lennon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+Termination of dormancy in soil bacteria with resuscitation promoting factor (Rpf)
+
+## Clear workspace and set directory
+
+```{r setup}
+rm(list=ls())
+getwd()
+setwd("~/GitHub/Rpf")
+```
+
+## Load packages and functions
+
+```{r}
+require("png")
+require("grid")
+require("plyr")
+require("dplyr")
+sem <- function(x) sqrt(var(x)/length(x))
+cv <- function(x) sd(x)/mean(x)
+LL.95 <- function(x) t.test(x)$conf.int[1]
+UL.95 <- function(x) t.test(x)$conf.int[2]
+```
+
+## Load growth data
+
+This included monitoring of dormant KBS0714 populations in Klett flasks. 
+Measured OD600 daily on flasks with (478 nM) vs. without (protein bufffer) Rpf.
+
+```{r}
+growth <- read.table("data/growth.curve/growth.curve.txt", sep="\t", header=TRUE)
+```
+
+## Make figure - time series
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/Fig4.png",
+    width = 1200, height = 900, res = 96*2) 
+plot.new()
+par(mar = c(7, 7, 5, 7))
+# Add +Rpf tubes
+plot(growth[,1], growth[,6], xlim = c(-25, 625), ylim = c(-0.5, 4), type = "l", 
+     lty = 2, col = "black", lwd = 2, ylab = "", xlab = "", 
+     cex.lab = 1.5, las = 1, yaxt = "n", xaxt = "n")
+box(lwd = 2)
+points(growth[,1], growth[,7], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,8], type = "l", lty = 2, col = "black", lwd = 2)
+points(growth[,1], growth[,9], type = "l", lty = 2, col = "black", lwd = 2)
+# Add -Rpf tubes
+points(growth[,1], growth[,2], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,3], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,4], type = "l", lty = 3, col = "black", lwd = 2)
+points(growth[,1], growth[,5], type = "l", lty = 3, col = "black", lwd = 2)
+# Add axes
+axis(side = 2, lwd.ticks = 2, las = 1, cex.axis = 1.25, 
+   labels = c("0", "1", "2", "3", "4"), 
+        at = c(0, 1, 2, 3, 4))
+axis(side = 4, labels = F, lwd.ticks = 2, 
+   at = c(0, 1, 2, 3, 4))
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1, mgp = c(1, 1, 0),
+    labels = c(0, 200, 400, 600), at = c(0, 200, 400, 600))
+axis(side = 3, labels = F, lwd.ticks = 2, las = 1, cex.axis = 1, 
+   at = c(0, 200, 400, 600))
+# Add axis labels
+mtext('Biomass (OD600)', side = 2, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.6)
+mtext('Time (h)', side = 1, outer = TRUE, cex = 1.5, 
+      line = -4, adj = 0.5)
+text(400, 3.6, labels = "+Rpf", cex = 1.25)
+text(540, 3.6, labels = "-Rpf", cex = 1.25)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+# Show Plot
+img <- readPNG("./figures/Fig4.png")
+grid.raster(img)
+```
+
+## Analyze growth curve parameters
+
+# Load parameters derived from modified Gompertz model
+
+```{r}
+g.parms <- read.delim("data/growth.curve/parameters.txt", sep=",", header=TRUE)
+```
+
+# Compare summary statistics of growth curve parameters
+
+```{r}
+Treatment <- c("Rpf-", "Rpf-","Rpf-","Rpf-", "Rpf+","Rpf+","Rpf+","Rpf+")
+g.parms$Treatment <- Treatment
+
+Rpf.plus <- g.parms %>%
+  filter(Treatment == "Rpf+")
+Rpf.minus <- g.parms %>%
+  filter(Treatment == "Rpf-")
+
+# Maximum growth rate (umax)
+umax.init <- ddply(g.parms, c("Treatment"), summarise,
+                   mean=mean(umax), sem=sd(umax)/sqrt(length(umax)))
+umax <- transform(umax.init, lower=mean-sem, upper=mean+sem)
+
+# Lag time
+lag.init <- ddply(g.parms, c("Treatment"), summarise,
+                   mean=mean(L), sem=sd(L)/sqrt(length(L)))
+lag <- transform(lag.init, lower=mean-sem, upper=mean+sem)
+
+# Yield
+yield.init <- ddply(g.parms, c("Treatment"), summarise,
+                   mean=mean(A), sem=sd(A)/sqrt(length(A)))
+yield <- transform(yield.init, lower=mean-sem, upper=mean+sem)
+
+# compare coefficients of variation of growth parameters as function of Rpf
+g.parm.CV <- g.parms %>% group_by(Treatment) %>%
+   summarise_at(c("L", "umax", "A"), cv)
+
+# Relatively small difference in CV of yield for +Rpf (0.093) vs. -Rpf (0.131)
+# CV for umax much higher in -Rpf (0.74) compared to +Rpf (0.0224)
+# Similarly, CV for lag is higher in -Rpf (0.114) compared to +Rpf (0.0231)
+```
+
+# Statistically test for Rpf effect on growth curve parameters
+
+```{r}
+umax.test <- t.test(umax~Treatment, data=g.parms)
+# t = 1.4039, df = 3.0013, p-value = 0.2549
+lag.test <- t.test(L~Treatment, data=g.parms)
+# t = 6.5252, df = 3.0966, p-value = 0.006631
+# lag is 1.6 times or 65 % longer without Rpf
+# Takes 179 h (or 7.5 days) longer to enter exponential phase
+yield.test <- t.test(A~Treatment, data=g.parms)
+# t = 1.6802, df = 5.0111, p-value = 0.1536
+```
+
+
+# Statistically test equal variance for growth curve parameter
+
+```{r}
+Rpf.plus <- g.parms %>% filter(Treatment == "Rpf+")
+Rpf.minus <- g.parms %>% filter(Treatment == "Rpf-")
+umax_var_test <- var.test(Rpf.plus$umax, Rpf.minus$umax)
+# ratio of variances = 0.000212798, F(3,3) = 0.0002, p = 1.05 × 10−5−5)
+lag_var_test <- var.test(Rpf.plus$L, Rpf.minus$L)
+# ratio of variances = 0.01609621, F(3,3) = 0.016, p = 0.006737)
+yield_var_test <- var.test(Rpf.plus$A, Rpf.minus$A)
+# ratio of variances = 0.3848321, F(3,3) = 0.38483, p = 0.4536)
+```
+
+
+## Make figure - growth parameters
+
+```{r}
+png(filename="~/GitHub/Rpf/figures/FigS4.png",
+    width = 600, height = 1200, res = 96*2) 
+
+plot.new()
+par(oma=c(2, 1.5, 0, 1), mar=c(2, 5, 2, 2), mfrow=c(3, 1))
+
+# umax
+
+# Add points = -Rpf
+plot(rep(jitter(0.75, amount = 0.1),4), Rpf.minus$umax, 
+     ylim = c(-0.03, 0.2), xlim = c(0, 3), pch = 21, col = "lightgrey", 
+     bg = "lightgrey", lwd = 2, cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+box(lwd=2) 
+
+# Add means
+points(0.75, mean(Rpf.minus$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 0.75, y0 = Rpf.minus$umax, 
+       y1 = LL.95(Rpf.minus$umax), angle = 90, 
+       length = 0.1, lwd = 2)
+arrows(x0 = 0.75, y0 = Rpf.minus$umax, 
+       y1 = UL.95(Rpf.minus$umax), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add points = +Rpf
+points(rep(jitter(2.25, amount = 0.1),4), Rpf.plus$umax, 
+       pch = 21, col = "lightgrey", bg = "lightgrey", 
+       lwd = 2, cex = 1.7) 
+
+# Add mean = +Rpf
+points(2.25, mean(Rpf.plus$umax), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 2.25, y0 = Rpf.plus$umax, y1 = LL.95(Rpf.plus$umax), 
+       angle = 90, length = 0.1, lwd = 2)
+arrows(x0 = 2.25, y0 = Rpf.plus$umax, y1 = UL.95(Rpf.plus$umax), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("0", "0.1", "0.2"), at = c(0, 0.1, 0.2))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(0, 0.1, 0.2), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+
+# Add axis labels
+#mtext('-Rpf', side = 1, line = 3, at = 0.75, cex = 1)
+#mtext('+Rpf', side = 1, line = 3, at = 2.25, cex = 1)
+mtext(expression(mu [max]* ' (hr'^-1*')'), side = 2,
+ outer = FALSE, cex = 1.5, line = 4, adj = 0.5)
+
+# yield
+
+# Add points = -Rpf
+plot(rep(jitter(0.75, amount = 0.1),4), Rpf.minus$A, 
+     ylim = c(2.5, 5.5), xlim = c(0, 3), pch = 21, 
+     col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7,
+     yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+box(lwd=2) 
+
+# Add means
+points(0.75, mean(Rpf.minus$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 0.75, y0 = Rpf.minus$A, y1 = LL.95(Rpf.minus$A), 
+       angle = 90, length = 0.1, lwd = 2)
+arrows(x0 = 0.75, y0 = Rpf.minus$A, y1 = UL.95(Rpf.minus$A), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add points = +Rpf
+points(rep(jitter(2.25, amount = 0.1),4), Rpf.plus$A, pch = 21, 
+       col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7) 
+
+# Add mean = +Rpf
+points(2.25, mean(Rpf.plus$A), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 2.25, y0 = Rpf.plus$A, y1 = LL.95(Rpf.plus$A), 
+       angle = 90, length = 0.1, lwd = 2)
+arrows(x0 = 2.25, y0 = Rpf.plus$A, y1 = UL.95(Rpf.plus$A), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("3", "4", "5"), at = c(3, 4, 5))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(3, 4, 5), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+
+# Add axis labels
+#mtext('-Rpf', side = 1, line = 3, at = 0.75, cex = 1)
+#mtext('+Rpf', side = 1, line = 3, at = 2.25, cex = 1)
+mtext(expression('Yield (OD600)'), side = 2,
+      outer = FALSE, cex = 1.5, line = 4, adj = 0.5)
+
+# lag
+
+# Add points = -Rpf
+plot(rep(jitter(0.75, amount = 0.1),4), Rpf.minus$L, 
+     ylim = c(250, 650), xlim = c(0, 3), pch = 21, 
+     col = "lightgrey", bg = "lightgrey", lwd = 2, 
+     cex = 1.7, yaxt = "n", xaxt = "n", cex.lab = 2, 
+     cex.axis= 1.5, las = 1, ylab = "", xlab = "")
+box(lwd=2) 
+
+# Add means
+points(0.75, mean(Rpf.minus$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 0.75, y0 = Rpf.minus$L, y1 = LL.95(Rpf.minus$L), 
+       angle = 90, length = 0.1, lwd = 2)
+arrows(x0 = 0.75, y0 = Rpf.minus$L, y1 = UL.95(Rpf.minus$L), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add points = +Rpf
+points(rep(jitter(2.25, amount = 0.1),4), Rpf.plus$L, pch = 21, 
+       col = "lightgrey", bg = "lightgrey", lwd = 2, cex = 1.7) 
+
+# Add mean = +Rpf
+points(2.25, mean(Rpf.plus$L), pch = 21, col = "black", 
+       bg = "NA", lwd = 2, cex = 2.5)
+
+# Add error bars
+arrows(x0 = 2.25, y0 = Rpf.plus$L, y1 = LL.95(Rpf.plus$L), 
+       angle = 90, length = 0.1, lwd = 2)
+arrows(x0 = 2.25, y0 = Rpf.plus$L, y1 = UL.95(Rpf.plus$L), 
+       angle = 90, length = 0.1, lwd = 2)
+
+# Add axes
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     labels = c("300", "400", "500", "600"), at = c(300, 400, 500, 600))
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at=c(300, 400, 500, 600), labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.25, las = 1,
+     at = c(0.75, 2.25), labels = F)
+
+# Add axis labels
+mtext('-Rpf', side = 1, line = 3, at = 0.75, cex = 1.5)
+mtext('+Rpf', side = 1, line = 3, at = 2.25, cex = 1.5)
+
+mtext(expression('Lag time (hr)'), side = 2,
+      outer = FALSE, cex = 1.5, line = 4, adj = 0.5)
+
+# Close Plot Device
+dev.off()
+graphics.off()
+# Show Plot
+img <- readPNG("./figures/FigS4.png")
+grid.raster(img)
+```
